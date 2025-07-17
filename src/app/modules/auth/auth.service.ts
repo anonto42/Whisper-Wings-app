@@ -73,7 +73,10 @@ const loginUserFromDB = async (payload: ILoginData) => {
     expireAt: expireAt
   })
   
-  return { accessToken: createToken, refreshToken };
+  isExistUser.password = '';
+  isExistUser.authentication = undefined;
+
+  return { accessToken: createToken, refreshToken, user: isExistUser };
 };
 
 // refresh access token
