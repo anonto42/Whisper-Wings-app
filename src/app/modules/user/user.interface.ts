@@ -22,5 +22,6 @@ export type UserModal = {
   isValidUser(id: string):any;
   isExistUserById(id: string): any;
   isExistUserByEmail(email: string): any;
+  isUserExist( filter: object ): Promise<IUser>;
   isMatchPassword(password: string, hashPassword: string): boolean;
 } & Model<IUser>;

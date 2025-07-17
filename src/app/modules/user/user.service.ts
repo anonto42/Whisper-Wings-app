@@ -44,10 +44,11 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   };
 };
 
-const getUserProfileFromDB = async (
+const getUserProfileFromDB = async ( 
   user: JwtPayload
 ): Promise<Partial<IUser>> => {
   const { id } = user;
+  
   const isExistUser = await User.isValidUser(id);
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");

@@ -111,6 +111,21 @@ userSchema.statics.isValidUser = async (id: string) => {
   return isExist;
 };
 
+userSchema.statics.isUserExist = async ( payload: object ): Promise<IUser> => {
+  const user = await User.findOneAndUpdate(
+    payload,
+    { lastActive: new Date( Date.now() ) },
+    { new: true }
+  );
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND,"User not exist!")
+  };
+  if ( user.status === STATUS.BLOCKED ) {
+    throw new ApiError(StatusCodes.FORBIDDEN,`Your account was ${user.status.toLowerCase()}!`)
+  };
+  return user
+};
+
 //check user
 userSchema.pre('save', async function (next) {
   //check user
