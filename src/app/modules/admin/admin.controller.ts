@@ -213,6 +213,82 @@ const allCatagory = catchAsync(
   }
 );
 
+const allWhispers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+
+    const {...data} = req.body;
+
+    const result = await AdminService.allWhispers(data)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully get all whispers',
+      data: result,
+    });
+  }
+);
+
+const createWhisper = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {...data} = req.body;
+    const whisperCoverImage = getSingleFilePath(req.files,'whisperCoverImage');
+    const whisperAudioFile = getSingleFilePath(req.files,'whisperAudioFile');
+
+    const finalData = {
+      whisperCoverImage,
+      whisperAudioFile,
+      ...data
+    }
+    const result = await AdminService.createWhisper(finalData)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully create the whisper',
+      data: result,
+    });
+  }
+);
+
+const updateWhisper = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+
+    const {...data} = req.body;
+
+    const whisperCoverImage = getSingleFilePath(req.files,'whisperCoverImage');
+    const whisperAudioFile = getSingleFilePath(req.files,'whisperAudioFile');
+
+    const finalData = {
+      whisperCoverImage,
+      whisperAudioFile,
+      ...data
+    }
+
+    const result = await AdminService.updateWhisper(finalData);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully update the whisper',
+      data: result,
+    });
+  }
+);
+
+const deleteWhisper = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {...data} = req.body;
+    const result = await AdminService.deleteWhisper(data)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully delete the whisper',
+      data: result,
+    });
+  }
+);
+
+
+
 export const AdminController = {
   getUser,
   blockUser,
@@ -226,4 +302,8 @@ export const AdminController = {
   updateCatagory,
   deleteCatagory,
   allCatagory,
+  createWhisper,
+  allWhispers,
+  updateWhisper,
+  deleteWhisper
 }

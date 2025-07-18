@@ -25,6 +25,29 @@ const catagoryUpload = z.object({
   })
 })
 
+const whisperUpload = z.object({
+  body: z.object({
+      whisperCoverImage: z.any({required_error: "You must give the image of the catagory"}),
+      whisperName: z.string({ required_error:"Name is required"}),
+      whisperDescription: z.string({ required_error:"Description is required"}),
+      whisperCategory: z.string({ required_error:"Category is required"}),
+      whisperSherpas: z.string({ required_error:"Sherpas is required"}),
+      whisperAudioFile: z.any({ required_error:"Audio file is required"}),
+  })
+})
+
+const whisperUpdate = z.object({
+  body: z.object({
+      id: z.string({ required_error:"Id is required"}),
+      whisperCoverImage: z.any().optional(),
+      whisperName: z.string().optional(),
+      whisperDescription: z.string().optional(),
+      whisperCategory: z.string().optional(),
+      whisperSherpas: z.string().optional(),
+      whisperAudioFile: z.any().optional(),
+  })
+})
+
 const updateCatagory = z.object({
   body: z.object({
       id: z.string({ required_error:"Id is required"}),
@@ -40,5 +63,7 @@ export const AdminValidaton = {
   postUpload,
   sherpaUpload,
   catagoryUpload,
-  updateCatagory
+  whisperUpload,
+  updateCatagory,
+  whisperUpdate
 }

@@ -5,10 +5,12 @@ import { StatusCodes } from "http-status-codes"
 import { STATUS } from "../../../enums/user"
 import { Sherpa } from "../sherpas/sherpas.model"
 import { ISherpa } from "../sherpas/sharpas.interface"
-import unlinkFile from "../../../shared/unlinkFile"
-import { ICatagory } from "../category/catagory.interface"
+import unlinkFile, { unlinkFileAsync } from "../../../shared/unlinkFile"
 import { Category } from "../category/category.model"
 import { TCategoryCreate, UploadCategory } from "./admin.type"
+import { Whisper } from "../whisper/whisper.model"
+import { IWhisper, IWhisperUpdate } from "../whisper/whisper.interface"
+import mongoose from "mongoose"
 
 // const OverView = async (
 //     payload: JwtPayload
@@ -342,6 +344,59 @@ const deleteCatagory = async ( id: string ) => {
     return result
 }
 
+const allWhispers = async (paginate: {page: number, limit: number}) => {
+    return await Whisper.find()
+        .skip((paginate.page - 1) * paginate.limit)
+        .limit(paginate.limit)
+}
+
+const createWhisper = async (data: IWhisper) => {
+    try {
+        const result = await Whisper.create(data);
+        if (!result || !result.id) {
+            throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create whisper!");
+        }
+        return result;
+    } catch (error) {
+        console.error("Error occurred while creating whisper:", error);
+        
+        if (data.whisperCoverImage) {
+            unlinkFile(data.whisperCoverImage); 
+        }
+        if (data.whisperAudioFile) {
+            try {
+                await unlinkFileAsync(data.whisperAudioFile); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+        
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create whisper!");
+    }
+}
+
+const updateWhisper = async (data: IWhisperUpdate) => {
+    
+    const result = await Whisper.findByIdAndUpdate(data.id,data)
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST,"Failed to update whisper!")
+    }
+    unlinkFile(data.whisperCoverImage);
+    await unlinkFileAsync(data.whisperAudioFile);
+    return result
+}
+
+const deleteWhisper = async (id: string) => {
+
+    const objID = new mongoose.Types.ObjectId(id)
+
+    const result = await Whisper.findByIdAndDelete(objID)
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST,"Whisper not found for delete!")
+    }
+    return result
+}
+
 export const AdminService = {
     allUsers,
     AUser,
@@ -355,5 +410,9 @@ export const AdminService = {
     allCatagory,
     createCatagory,
     updateCatagory,
-    deleteCatagory
+    deleteCatagory,
+    allWhispers,
+    createWhisper,
+    updateWhisper,
+    deleteWhisper
 }

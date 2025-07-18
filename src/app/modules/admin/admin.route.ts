@@ -74,4 +74,27 @@ router
         AdminController.deleteCatagory
     )
 
+router
+    .route("/whisper")
+    .get(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.allWhispers
+    )
+    .post(
+        auth( USER_ROLES.ADMIN ),
+        fileUploadHandler(),
+        validateRequest(AdminValidaton.whisperUpload),
+        AdminController.createWhisper
+    )   
+    .put(
+        auth( USER_ROLES.ADMIN ),
+        fileUploadHandler(),
+        validateRequest(AdminValidaton.whisperUpdate),
+        AdminController.updateWhisper
+    )
+    .delete(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.deleteWhisper
+    )
+
 export const AdminRouter = router;
