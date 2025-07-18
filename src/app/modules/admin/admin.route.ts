@@ -118,4 +118,12 @@ router
         AdminController.deleteSubscription
     )
 
+router
+    .route("/subscriber")
+    .get(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.subscripers
+    )
+
+
 export const AdminRouter = router;

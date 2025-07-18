@@ -341,16 +341,26 @@ const allSubscriptions = catchAsync(
  
 const subscripers = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    // const {...data} = req.body;
-    // const result = await AdminService.subscriper(data)
-    // sendResponse(res, {
-    //   success: true,
-    //   statusCode: StatusCodes.OK,
-    //   message: 'Successfully get all subscriptions',
-    //   data: result,
-    // });
+    
+    const id = req.query.id;
+    const {...paginate} = req.body;
+    let result;
+    let message;
+    if (!id) {
+      result = await AdminService.allSubscribers(paginate)
+      message = 'Successfully get all subscribers'
+    } else if (id) {
+      result = await AdminService.ASubscriber(id as string)
+      message = 'Successfully get subscriber'
+    }
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message,
+      data: result,
+    });
   }
-)
+);
 
 
 export const AdminController = {

@@ -13,6 +13,7 @@ import { IWhisper, IWhisperUpdate } from "../whisper/whisper.interface"
 import mongoose from "mongoose"
 import { ISubscription, IUpdateSubscription } from "../subscriptions/subscription.interface"
 import { Subscription } from "../subscriptions/subscription.model"
+import { Subscribed } from "../subscriptions/subscribed.model"
 
 // const OverView = async (
 //     payload: JwtPayload
@@ -432,6 +433,17 @@ const allSubscriptions = async (paginate: {page: number, limit: number}) => {
         .limit(paginate.limit)
 }
 
+const allSubscribers = async (paginate: {page: number, limit: number}) => {
+    return Subscribed.find()
+        .skip((paginate.page - 1) * paginate.limit)
+        .limit(paginate.limit)
+}
+
+const ASubscriber = async (id: string) => {
+    const objId = new mongoose.Types.ObjectId(id)
+    return Subscribed.findById(objId)
+}
+
 export const AdminService = {
     allUsers,
     AUser,
@@ -453,5 +465,7 @@ export const AdminService = {
     allSubscriptions,
     createSubscription,
     updateSubscription,
-    deleteSubscription
+    deleteSubscription,
+    allSubscribers,
+    ASubscriber
 }
