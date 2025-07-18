@@ -97,4 +97,25 @@ router
         AdminController.deleteWhisper
     )
 
+router
+    .route("/subscription")
+    .get(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.allSubscriptions
+    )
+    .post(
+        auth( USER_ROLES.ADMIN ),
+        validateRequest(AdminValidaton.subscriptionUpload),
+        AdminController.createSubscription
+    )
+    .put(
+        auth( USER_ROLES.ADMIN ),
+        validateRequest(AdminValidaton.subscriptionUpdate),
+        AdminController.updateSubscription
+    )
+    .delete(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.deleteSubscription
+    )
+
 export const AdminRouter = router;

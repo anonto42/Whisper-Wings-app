@@ -57,13 +57,32 @@ const updateCatagory = z.object({
   })
 })
 
+const subscriptionUpdate = z.object({
+  body: z.object({
+      id: z.string({ required_error:"Id is required"}),
+      name: z.string().optional(),    
+      price:  z.number().optional(),
+      details: z.array(z.string({ required_error: "Details is required"})).optional()
+  })  
+})
+
+const subscriptionUpload = z.object({
+  body: z.object({
+      name: z.string({ required_error:"Name is required"}),    
+      price:  z.number({ required_error:"Price is required"}),
+      details: z.array(z.string({ required_error: "Details is required"})).optional()
+  })
+})
+
 
 
 export const AdminValidaton = {
   postUpload,
-  sherpaUpload,
+  sherpaUpload, 
   catagoryUpload,
   whisperUpload,
   updateCatagory,
-  whisperUpdate
+  whisperUpdate,
+  subscriptionUpload,
+  subscriptionUpdate
 }

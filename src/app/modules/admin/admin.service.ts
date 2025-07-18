@@ -11,6 +11,8 @@ import { TCategoryCreate, UploadCategory } from "./admin.type"
 import { Whisper } from "../whisper/whisper.model"
 import { IWhisper, IWhisperUpdate } from "../whisper/whisper.interface"
 import mongoose from "mongoose"
+import { ISubscription, IUpdateSubscription } from "../subscriptions/subscription.interface"
+import { Subscription } from "../subscriptions/subscription.model"
 
 // const OverView = async (
 //     payload: JwtPayload
@@ -397,6 +399,39 @@ const deleteWhisper = async (id: string) => {
     return result
 }
 
+const createSubscription = async (data: ISubscription) => {
+    const result = await Subscription.create(data)
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST,"Failed to create subscription!")
+    }
+    return result
+}
+
+const updateSubscription = async (data: IUpdateSubscription) => {
+    const result = await Subscription.findByIdAndUpdate(data.id,data,{new: true})
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST,"Failed to update subscription!")
+    }
+    return result
+}
+
+const deleteSubscription = async (id: string) => {
+    const objId = new mongoose.Types.ObjectId(id)
+    
+    const result = await Subscription.findByIdAndDelete(objId)
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST,"Subscription not found for delete!")
+    }
+
+    return result
+}
+
+const allSubscriptions = async (paginate: {page: number, limit: number}) => {
+    return Subscription.find()
+        .skip((paginate.page - 1) * paginate.limit)
+        .limit(paginate.limit)
+}
+
 export const AdminService = {
     allUsers,
     AUser,
@@ -414,5 +449,9 @@ export const AdminService = {
     allWhispers,
     createWhisper,
     updateWhisper,
-    deleteWhisper
+    deleteWhisper,
+    allSubscriptions,
+    createSubscription,
+    updateSubscription,
+    deleteSubscription
 }

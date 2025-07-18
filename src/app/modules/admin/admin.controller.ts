@@ -287,6 +287,70 @@ const deleteWhisper = catchAsync(
   }
 );
 
+const createSubscription = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {...data} = req.body;
+    const result = await AdminService.createSubscription(data)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully create the subscription',
+      data: result,
+    });
+  }
+);
+
+const updateSubscription = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {...data} = req.body;
+    const result = await AdminService.updateSubscription(data)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully update the subscription',
+      data: result,
+    });
+  }
+);
+
+const deleteSubscription = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {...data} = req.body;
+    const result = await AdminService.deleteSubscription(data)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully delete the subscription',
+      data: result,
+    });
+  }
+);
+
+const allSubscriptions = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {...data} = req.body;
+    const result = await AdminService.allSubscriptions(data)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully get all subscriptions',
+      data: result,
+    });
+  }
+);
+ 
+const subscripers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    // const {...data} = req.body;
+    // const result = await AdminService.subscriper(data)
+    // sendResponse(res, {
+    //   success: true,
+    //   statusCode: StatusCodes.OK,
+    //   message: 'Successfully get all subscriptions',
+    //   data: result,
+    // });
+  }
+)
 
 
 export const AdminController = {
@@ -305,5 +369,10 @@ export const AdminController = {
   createWhisper,
   allWhispers,
   updateWhisper,
-  deleteWhisper
+  deleteWhisper,
+  createSubscription,
+  updateSubscription,
+  deleteSubscription,
+  allSubscriptions,
+  subscripers
 }
