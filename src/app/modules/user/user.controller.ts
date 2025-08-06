@@ -52,4 +52,31 @@ const updateProfile = catchAsync(
   }
 );
 
-export const UserController = { createUser, getUserProfile, updateProfile };
+const changeLanguage = catchAsync(
+  async (req: Request | any, res: Response, next: NextFunction) => {
+    const user = req.user;
+    const { ...languageData } = req.body;
+    const result = await UserService.changeLanguageToDB(user, languageData);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Language changed successfully',
+      data: result,
+    });
+  }
+);
+
+const getLanguage = catchAsync(async (req: Request | any, res: Response) => {
+  const user = req.user;
+  const result = await UserService.getLanguageFromDB(user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Language retrieved successfully',
+    data: result,
+  });
+});
+
+export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage };

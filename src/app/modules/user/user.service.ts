@@ -8,6 +8,7 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
+import { Types } from 'mongoose';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   //set role
@@ -74,13 +75,46 @@ const updateProfileToDB = async (
 
   const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
     new: true,
-  });
+  }).select("-password -authentication -__v -createdAt -updatedAt -email -role -verified -status");
 
   return updateDoc;
+};
+
+const changeLanguageToDB = async (
+  user: JwtPayload,
+  payload: Partial<IUser>
+): Promise<Partial<IUser | null>> => {
+  const { id } = user;
+  const isExistUser = await User.isExistUserById(id);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const updateDoc = await User.findOneAndUpdate({ _id: id }, payload, {
+    new: true,
+  }).select("-password -authentication -__v -createdAt -updatedAt -email -role -verified -status -favorites");
+
+  return updateDoc;
+};
+
+const getLanguageFromDB = async (
+  user: JwtPayload
+): Promise<any> => {
+  const { id } = user;
+
+  const newOBjID = new Types.ObjectId(id);
+  const isExistUser = await User.findById(newOBjID).lean().exec();
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  };
+
+  return isExistUser.language;
 };
 
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   updateProfileToDB,
+  changeLanguageToDB,
+  getLanguageFromDB,
 };

@@ -5,6 +5,7 @@ import config from '../../../config';
 import { STATUS, USER_ROLES } from '../../../enums/user';
 import ApiError from '../../../errors/ApiError';
 import { IUser, UserModal } from './user.interface';
+import { TLangouage } from '../../../enums/langouage';
 
 const userSchema = new Schema<IUser, UserModal>(
   {
@@ -42,6 +43,15 @@ const userSchema = new Schema<IUser, UserModal>(
     verified: {
       type: Boolean,
       default: false,
+    },
+    language: {
+      type: String,
+      enum: Object.values(TLangouage),
+      default: TLangouage.ENGLISH,
+    },
+    favorites:{
+      type: [Schema.Types.ObjectId],
+      ref: "Whisper"
     },
     authentication: {
       isResetPassword: {
@@ -84,7 +94,7 @@ userSchema.statics.isMatchPassword = async (
 userSchema.statics.isValidUser = async (id: string) => {
   const isExist = await User  
                         .findById( id)
-                        .select("-password -authentication -__v -updatedAt -createdAt")
+                        .select("-password -authentication -__v -updatedAt -createdAt -favorites")
                         .lean()
                         .exec();
 

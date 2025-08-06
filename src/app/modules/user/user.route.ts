@@ -30,4 +30,9 @@ router
     UserController.createUser
   );
 
+router
+  .route("/change-language")
+  .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getLanguage)
+  .patch(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.changeLanguage);
+
 export const UserRoutes = router;

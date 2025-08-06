@@ -1,5 +1,6 @@
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { STATUS, USER_ROLES } from '../../../enums/user';
+import { TLangouage } from '../../../enums/langouage';
 
 export type IUser = {
   name: string;
@@ -11,6 +12,8 @@ export type IUser = {
   image?: string;
   status: STATUS;
   verified: boolean;
+  language: TLangouage;
+  favorites: Types.ObjectId[];
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;
