@@ -1,6 +1,9 @@
 # Node modules
 node_modules/
 
+# Python Modules
+__pycache__
+
 # Logs
 /winston
 logs/
