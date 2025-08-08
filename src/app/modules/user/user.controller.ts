@@ -11,6 +11,8 @@ import { User } from './user.model';
 import mongoose, { Types } from 'mongoose';
 import { Subscription } from '../subscriptions/subscription.model';
 import { Subscribed } from '../subscriptions/subscribed.model';
+import path from "path";
+import fs from "fs";
 
 const createUser = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
@@ -208,4 +210,46 @@ const getStory = catchAsync(async (req: Request | any, res: Response, next: Next
   });
 });
 
-export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess, dataForGuest, loved, getLoved, getStory };
+const readStream = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+
+  const filePath = req.query.path;
+
+  if (!filePath) {
+    return res.status(400).json({ error: 'File path is required' });
+  }
+
+  const currentDirectory = process.cwd();
+
+  const sanitizedFilePath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+
+  const fullFilePath = path.resolve(currentDirectory, 'uploads', sanitizedFilePath);
+
+  if (!fs.existsSync(fullFilePath)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+
+  const extname = path.extname(fullFilePath).toLowerCase();
+  let contentType = 'application/octet-stream';
+
+  if (extname === '.mp3') {
+    contentType = 'audio/mpeg';
+  } else if (extname === '.mp4') {
+    contentType = 'video/mp4';
+  } else if (extname === '.lrc') {
+    contentType = 'text/plain';
+  }
+
+  res.setHeader('Content-Type', contentType);
+  res.setHeader('Content-Disposition', 'inline');
+
+  const fileStream = fs.createReadStream(fullFilePath);
+  fileStream.pipe(res);
+
+  fileStream.on('error', (err) => {
+    console.error('File stream error:', err);
+    res.status(500).json({ error: 'Error streaming the file' });
+  });
+
+});
+
+export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess, dataForGuest, loved, getLoved, getStory, readStream };

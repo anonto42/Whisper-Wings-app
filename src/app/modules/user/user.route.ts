@@ -60,6 +60,12 @@ router
   )
 
 router
+  .route("/stream")
+  .get(
+    UserController.readStream
+  )
+
+router
   .route("/whispers")
   .get(
     auth(USER_ROLES.ADMIN, USER_ROLES.USER),
