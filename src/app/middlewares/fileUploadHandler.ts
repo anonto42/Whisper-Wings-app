@@ -30,8 +30,17 @@ const fileUploadHandler = () => {
         case 'whisperCoverImage':
           uploadDir = path.join(baseUploadDir, 'whisperCoverImage');
           break;
-        case 'whisperAudioFile':
-          uploadDir = path.join(baseUploadDir, 'whisperAudioFile');
+        case 'FrancaisFile':
+          uploadDir = path.join(baseUploadDir, 'FrancaisFile');
+          break;
+        case 'EspanolFile':
+          uploadDir = path.join(baseUploadDir, 'EspanolFile');
+          break;
+        case 'DeutschFile':
+          uploadDir = path.join(baseUploadDir, 'DeutschFile');
+          break;
+        case 'EnglishFile':
+          uploadDir = path.join(baseUploadDir, 'EnglishFile');
           break;
         case 'media':
           uploadDir = path.join(baseUploadDir, 'media');
@@ -91,7 +100,40 @@ const fileUploadHandler = () => {
           )
         );
       }
-    } else if (file.fieldname === 'whisperAudioFile') {
+    } else if (file.fieldname === 'EnglishFile') {
+      if (file.mimetype === 'video/mp4' || file.mimetype === 'audio/mpeg') {
+        cb(null, true);
+      } else {
+        cb(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Only .mp4, .mp3, file supported'
+          )
+        );
+      }
+    } else if (file.fieldname === 'DeutschFile') {
+      if (file.mimetype === 'video/mp4' || file.mimetype === 'audio/mpeg') {
+        cb(null, true);
+      } else {
+        cb(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Only .mp4, .mp3, file supported'
+          )
+        );
+      }
+    } else if (file.fieldname === 'FrancaisFile') {
+      if (file.mimetype === 'video/mp4' || file.mimetype === 'audio/mpeg') {
+        cb(null, true);
+      } else {
+        cb(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Only .mp4, .mp3, file supported'
+          )
+        );
+      }
+    } else if (file.fieldname === 'EspanolFile') {
       if (file.mimetype === 'video/mp4' || file.mimetype === 'audio/mpeg') {
         cb(null, true);
       } else {
@@ -118,8 +160,11 @@ const fileUploadHandler = () => {
     fileFilter: filterFilter,
   }).fields([
     { name: 'image', maxCount: 3 },
-    { name: 'whisperCoverImage', maxCount: 3 },
-    { name: 'whisperAudioFile', maxCount: 3 },
+    { name: 'whisperCoverImage', maxCount: 1 },
+    { name: 'EnglishFile', maxCount: 1 },
+    { name: 'DeutschFile', maxCount: 1 },
+    { name: 'FrancaisFile', maxCount: 1 },
+    { name: 'EspanolFile', maxCount: 1 },
     { name: 'doc', maxCount: 3 },
   ]);
   return upload;
