@@ -232,11 +232,19 @@ const createWhisper = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const {...data} = req.body;
     const whisperCoverImage = getSingleFilePath(req.files,'whisperCoverImage');
-    const whisperAudioFile = getSingleFilePath(req.files,'whisperAudioFile');
+    const EnglishFile = getSingleFilePath(req.files,'EnglishFile');
+    const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
+    const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
+    const EspanolFile = getSingleFilePath(req.files,'EspanolFile');
 
     const finalData = {
       whisperCoverImage,
-      whisperAudioFile,
+      EnglishFile,
+      DeutschFile,
+      FrancaisFile,
+      EspanolFile,
+      protocoll: req.protocol,
+      host: req.get('host'),
       ...data
     }
     const result = await AdminService.createWhisper(finalData)
@@ -255,11 +263,18 @@ const updateWhisper = catchAsync(
     const {...data} = req.body;
 
     const whisperCoverImage = getSingleFilePath(req.files,'whisperCoverImage');
-    const whisperAudioFile = getSingleFilePath(req.files,'whisperAudioFile');
+    const EnglishFile = getSingleFilePath(req.files,'EnglishFile');
+    const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
+    const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
+    const EspanolFile = getSingleFilePath(req.files,'EspanolFile');
 
     const finalData = {
       whisperCoverImage,
-      whisperAudioFile,
+      EnglishFile,
+      DeutschFile,
+      FrancaisFile,
+      EspanolFile,
+      protocoll: req.protocol,
       ...data
     }
 

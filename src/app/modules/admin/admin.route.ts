@@ -27,7 +27,7 @@ router
         auth( USER_ROLES.ADMIN ),
         AdminController.deletetUser
     )
-
+ 
 router
     .route("/sherpas")
     .get(
@@ -85,7 +85,7 @@ router
         fileUploadHandler(),
         validateRequest(AdminValidaton.whisperUpload),
         AdminController.createWhisper
-    )   
+    )
     .put(
         auth( USER_ROLES.ADMIN ),
         fileUploadHandler(),

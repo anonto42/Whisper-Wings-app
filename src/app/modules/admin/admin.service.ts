@@ -14,6 +14,10 @@ import mongoose from "mongoose"
 import { ISubscription, IUpdateSubscription } from "../subscriptions/subscription.interface"
 import { Subscription } from "../subscriptions/subscription.model"
 import { Subscribed } from "../subscriptions/subscribed.model"
+import axios from "axios"
+import config from "../../../config"
+import FormData from 'form-data';
+import fs from 'fs';
 
 // const OverView = async (
 //     payload: JwtPayload
@@ -266,13 +270,13 @@ const deleteSherpa = async (
 const allUsers = async (paginate: {page: number, limit: number}) => {
     
     return User.find()
-        .select("-password -otpVerification -__v")
+        .select("-password -otpVerification -__v -authentication")
         .skip((paginate.page - 1) * paginate.limit)
         .limit(paginate.limit)
 }
 
 const AUser = async (id: string) => {
-    return User.findById(id).select("-password -otpVerification")
+    return User.findById(id).select("-password -otpVerification -authentication")
 }
 
 const deleteUser = async (id: string) => {
@@ -353,40 +357,151 @@ const allWhispers = async (paginate: {page: number, limit: number}) => {
         .limit(paginate.limit)
 }
 
-const createWhisper = async (data: IWhisper) => {
+const createWhisper = async (data: IWhisper & { protocoll: string, host: string }) => {
     try {
+
+        const EnglishLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EnglishFile});
+
+        const DeutschLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.DeutschFile});
+        
+        const FrancaisLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.FrancaisFile});
+        
+        const EspanolLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EspanolFile});
+
+        data.DeutschLRC = DeutschLRC.data.lrc_file;
+        data.FrancaisLRC = FrancaisLRC.data.lrc_file;
+        data.EspanolLRC = EspanolLRC.data.lrc_file;
+        data.EnglishLRC = EnglishLRC.data.lrc_file;
+
         const result = await Whisper.create(data);
         if (!result || !result.id) {
             throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create whisper!");
         }
         return result;
+        
     } catch (error) {
         console.error("Error occurred while creating whisper:", error);
         
+        // Clean up any files if necessary
         if (data.whisperCoverImage) {
-            unlinkFile(data.whisperCoverImage); 
+            unlinkFile(data.whisperCoverImage);
         }
-        if (data.whisperAudioFile) {
+        if (data.DeutschFile) {
             try {
-                await unlinkFileAsync(data.whisperAudioFile); 
+                await unlinkFileAsync(data.DeutschFile); 
             } catch (err) {
                 console.error("Failed to delete audio file:", err);
             }
         }
-        
+        if (data.FrancaisFile) {
+            try {
+                await unlinkFileAsync(data.FrancaisFile); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+        if (data.EspanolFile) {
+            try {
+                await unlinkFileAsync(data.EspanolFile); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+        if (data.EnglishFile) {
+            try {
+                await unlinkFileAsync(data.EnglishFile); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+
+        // Handle failure and throw an error
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create whisper!");
     }
 }
 
-const updateWhisper = async (data: IWhisperUpdate) => {
+const updateWhisper = async (data: IWhisperUpdate & { protocoll: string }) => {
+
+    if( 
+        !data.whisperName || 
+        !data.whisperSherpas || 
+        !data.whisperCategory || 
+        !data.whisperCoverImage || 
+        !data.EnglishFile || 
+        !data.DeutschFile || 
+        !data.FrancaisFile || 
+        !data.EspanolFile
+    ){
+        throw new ApiError(StatusCodes.BAD_REQUEST,"All fields are required!")
+    }
     
-    const result = await Whisper.findByIdAndUpdate(data.id,data)
+    const objid = new mongoose.Types.ObjectId(data.id)
+    const result = await Whisper.findById(objid)
     if (!result) {
         throw new ApiError(StatusCodes.BAD_REQUEST,"Failed to update whisper!")
     }
-    unlinkFile(data.whisperCoverImage);
-    await unlinkFileAsync(data.whisperAudioFile);
-    return result
+
+    if( data.whisperCoverImage != result.whisperCoverImage ){
+        result.whisperCoverImage = data.whisperCoverImage;
+        
+        unlinkFile(result.whisperCoverImage);
+    }
+
+    if( data.EnglishFile != result.EnglishFile ){
+        result.EnglishFile = data.EnglishFile;
+
+        const EnglishLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EnglishFile});
+
+        result.EnglishLRC = EnglishLRC.data.lrc_file;
+
+        await unlinkFileAsync(result.EnglishFile);
+    }
+
+    if( data.DeutschFile !== result.DeutschFile ){
+        result.DeutschFile = data.DeutschFile;
+
+        const DeutschLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.DeutschFile});
+
+        result.DeutschLRC = DeutschLRC.data.lrc_file;
+
+        await unlinkFileAsync(result.DeutschFile);
+    }
+
+    if( data.FrancaisFile !== result.FrancaisFile ){
+        result.FrancaisFile = data.FrancaisFile;
+
+        const FrancaisLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.FrancaisFile});
+
+        result.FrancaisLRC = FrancaisLRC.data.lrc_file;
+
+        await unlinkFileAsync(result.FrancaisFile);
+    }
+
+    if( data.EspanolFile !== result.EspanolFile ){
+        result.EspanolFile = data.EspanolFile;
+
+        const EspanolLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EspanolFile});
+
+        result.EspanolLRC = EspanolLRC.data.lrc_file;
+
+        await unlinkFileAsync(result.EspanolFile);
+    }
+
+    if (data.whisperName !== result.whisperName) {
+        result.whisperName = data.whisperName;
+    }
+
+    if (data.whisperSherpas !== result.whisperSherpas) {
+        result.whisperSherpas = data.whisperSherpas;
+    }
+
+    if (data.whisperCategory !== result.whisperCategory) {
+        result.whisperCategory = data.whisperCategory;
+    }
+
+    await result.save();
+
+    return result;
 }
 
 const deleteWhisper = async (id: string) => {
@@ -397,6 +512,17 @@ const deleteWhisper = async (id: string) => {
     if (!result) {
         throw new ApiError(StatusCodes.BAD_REQUEST,"Whisper not found for delete!")
     }
+
+    unlinkFile(result.whisperCoverImage);
+    
+    await unlinkFileAsync(result.EnglishFile);
+    await unlinkFileAsync(result.DeutschFile);
+    await unlinkFileAsync(result.FrancaisFile);
+    await unlinkFileAsync(result.EspanolFile);
+    await unlinkFileAsync(result.EnglishLRC);
+    await unlinkFileAsync(result.DeutschLRC);
+    await unlinkFileAsync(result.FrancaisLRC);
+    await unlinkFileAsync(result.EspanolLRC);
     return result
 }
 
