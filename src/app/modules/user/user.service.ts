@@ -8,9 +8,11 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
-import mongoose, { Types } from 'mongoose';
+import mongoose, { mongo, Types } from 'mongoose';
 import { stripeWithKey } from '../../../util/stripe';
 import { Subscription } from '../subscriptions/subscription.model';
+import { Whisper } from '../whisper/whisper.model';
+import { IWhisper } from '../whisper/whisper.interface';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   //set role
@@ -168,6 +170,133 @@ const subscribeToDB = async (
   return session.url;
 };
 
+const lovedToDB = async (
+  user: JwtPayload,
+  data: string
+): Promise<boolean> => {
+  const { id } = user;
+  const isExistUser = await User.isExistUserById(id);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  const objID = new mongoose.Types.ObjectId(data);
+  const whisper = await Whisper.findById(objID);
+  if (!whisper) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Whisper doesn't exist!");
+  }
+
+  if (isExistUser.favorites.includes(objID)) {
+    
+    isExistUser.favorites.pull(objID);
+    await isExistUser.save();
+    return false;
+
+  } else {
+
+    isExistUser.favorites.push(objID);
+    await isExistUser.save();
+    return true;
+    
+  }
+};
+
+const getLoved = async (
+  user: JwtPayload
+): Promise<any> => {
+  const { id } = user;
+  const objID = new mongoose.Types.ObjectId(id);
+  const isExistUser = await User.findById(objID).populate("favorites");
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  return isExistUser.favorites;
+};
+
+const dataForGuest = async (
+  data: {
+    page: number,
+    limit: number
+  }
+): Promise<any> => {
+
+  const result = await Whisper.find()
+    .skip((data.page - 1) * data.limit)
+    .limit(data.limit);
+
+
+  const formetedData = result.map( (item: IWhisper, index: number  ) => {
+
+    if (index == 0) {
+      return {
+        isFree: index === 0 ? true : false,
+        whisperName: item.whisperName,
+        whisperCoverImage: item.whisperCoverImage,
+        whisperCategory: item.whisperCategory,
+        whisperSherpas: item.whisperSherpas,
+        EnglishFile: item.EnglishFile,
+        DeutschFile: item.DeutschFile,
+        FrancaisFile: item.FrancaisFile,
+        EspanolFile: item.EspanolFile,
+        timer: item.timer,
+        EnglishLRC: item.EnglishLRC,
+        DeutschLRC: item.DeutschLRC,
+        FrancaisLRC: item.FrancaisLRC,
+        EspanolLRC: item.EspanolLRC,
+      } 
+    } else {
+      return {
+        isFree: index === 0 ? true : false,
+        whisperName: item.whisperName,
+        whisperCoverImage: item.whisperCoverImage,
+        whisperCategory: item.whisperCategory,
+        whisperSherpas: item.whisperSherpas,
+      }
+    }
+    
+  });
+
+  return formetedData;
+};
+
+const getStory = async (
+  payload: JwtPayload,
+  data: {
+    page: number,
+    limit: number,
+    timer: string,
+    whisperCategory: string,
+    whisperSherpas: string,
+  }    
+): Promise<any> => {
+  const { id } = payload;
+  const objId = new mongoose.Types.ObjectId(id);
+  const user = await User.findById(objId);
+
+  if (!user) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  };
+
+  if (!user.subscriptionDate) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was not founded!");
+  };
+
+  if (user.subscriptionDate < new Date(Date.now())) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was expired!");
+  };
+
+  const whisper = await Whisper.find({
+    timer: data.timer,
+    whisperCategory: data.whisperCategory,
+    whisperSherpas: data.whisperSherpas,
+  })
+  .skip((data.page - 1) * data.limit)
+  .limit(data.limit);
+
+  return whisper;
+};
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
@@ -175,4 +304,8 @@ export const UserService = {
   changeLanguageToDB,
   getLanguageFromDB,
   subscribeToDB,
+  lovedToDB,
+  getLoved,
+  dataForGuest,
+  getStory,
 };

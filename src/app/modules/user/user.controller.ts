@@ -155,4 +155,57 @@ const paymentFailure = catchAsync(async (req: Request | any, res: Response, next
   return res.send(PyamentCancel);
 });
 
-export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess };
+const loved = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+
+  const user = req.user;
+  const { id } = req.params;
+  const result = await UserService.lovedToDB(user, id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: result ? "Whisper loved successfully" : "Whisper unloved successfully",
+    data: result,
+  });
+});
+
+const getLoved = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+
+  const user = req.user;
+  const result = await UserService.getLoved(user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Whisper get successfully",
+    data: result,
+  });
+});
+
+const dataForGuest = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+
+  const result = await UserService.dataForGuest(req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Data retrieved successfully',
+    data: result,
+  });
+});
+
+const getStory = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+
+  const user = req.user;
+
+  const result = await UserService.getStory(user, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Whisper get successfully",
+    data: result,
+  });
+});
+
+export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess, dataForGuest, loved, getLoved, getStory };

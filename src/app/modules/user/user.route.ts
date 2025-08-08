@@ -36,6 +36,37 @@ router
   .patch(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.changeLanguage);
 
 router
+  .route("/love")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    UserController.getLoved
+  )
+
+router
+  .route("/love/:id")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    UserController.getLoved
+  )
+  .patch(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    UserController.loved
+  )
+
+router
+  .route("/guest")
+  .get(
+    UserController.dataForGuest
+  )
+
+router
+  .route("/whispers")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    UserController.getStory
+  )
+
+router
   .route("/subscribe")
   .post(
     auth(USER_ROLES.ADMIN, USER_ROLES.USER), 
