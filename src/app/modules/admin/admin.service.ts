@@ -561,6 +561,11 @@ const allSubscriptions = async (paginate: {page: number, limit: number}) => {
 
 const allSubscribers = async (paginate: {page: number, limit: number}) => {
     return Subscribed.find()
+        .populate("subscriptionId")
+        .populate({
+            path: "userId",
+            select: "name email image language"
+        })
         .skip((paginate.page - 1) * paginate.limit)
         .limit(paginate.limit)
 }

@@ -13,6 +13,8 @@ export type IUser = {
   status: STATUS;
   verified: boolean;
   language: TLangouage;
+  transictionID: string;
+  subscriptionDate: Date;
   favorites: Types.ObjectId[];
   authentication?: {
     isResetPassword: boolean;

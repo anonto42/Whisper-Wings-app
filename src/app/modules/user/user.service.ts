@@ -8,7 +8,9 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { stripeWithKey } from '../../../util/stripe';
+import { Subscription } from '../subscriptions/subscription.model';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   //set role
@@ -111,10 +113,66 @@ const getLanguageFromDB = async (
   return isExistUser.language;
 };
 
+const subscribeToDB = async (
+  data: {
+    id: string,
+    planID: string,
+    protocall: string,
+    host: string,
+  }
+) => {
+  const { id } = data;
+
+  const objID = new mongoose.Types.ObjectId(id);
+  const isExistUser = await User.findById(objID);
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  if ( isExistUser.subscriptionDate > new Date( Date.now() ) ) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was not expired!");
+  }
+
+  const subscribtionOBJ = new mongoose.Types.ObjectId( data.planID  );
+  const isExistSubscription = await Subscription.findById(subscribtionOBJ);
+  if (!isExistSubscription) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Subscription doesn't exist!");
+  }
+
+  const session = await stripeWithKey.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: isExistSubscription.name,
+          },
+          unit_amount: isExistSubscription.price * 100,
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: `${data.protocall}://${data.host}/api/v1/user/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${data.protocall}://${data.host}/api/v1/user/payment/failure`,
+    metadata: {
+      userID: isExistUser._id.toString(),
+      plan_id: isExistSubscription._id.toString(),
+    },
+  });
+
+  isExistUser.transictionID = session.id;
+  await isExistUser.save();
+
+  return session.url;
+};
+
 export const UserService = {
   createUserToDB,
   getUserProfileFromDB,
   updateProfileToDB,
   changeLanguageToDB,
   getLanguageFromDB,
+  subscribeToDB,
 };

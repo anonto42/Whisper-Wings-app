@@ -35,4 +35,20 @@ router
   .get(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.getLanguage)
   .patch(auth(USER_ROLES.ADMIN, USER_ROLES.USER), UserController.changeLanguage);
 
+router
+  .route("/subscribe")
+  .post(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER), 
+    UserController.subscribe
+  );
+
+router
+  .route("/payment/success")
+  .get(UserController.paymentSuccess);
+
+router
+  .route("/payment/failure")
+  .get(UserController.paymentFailure);
+  
+
 export const UserRoutes = router;
