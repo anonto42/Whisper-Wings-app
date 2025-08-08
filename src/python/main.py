@@ -37,39 +37,40 @@ def transcribe_audio(audio_path, LRCName):
     recognizer = sr.Recognizer()
 
     wav_path = f"./temp/{LRCName}.wav"
-
     convert_mp3_to_wav(audio_path, wav_path)
 
     lyrics = []
     timestamps = []
 
     with sr.AudioFile(wav_path) as source:
-        recognizer.record(source)
-
-    try:
+        
         duration = get_audio_duration(wav_path)
-        segment_duration = 30
+        segment_duration = 30 
 
         for start_time in range(0, int(duration), segment_duration):
             end_time = start_time + segment_duration
             print(f"Processing segment from {start_time}s to {end_time}s")
-
             with sr.AudioFile(wav_path) as source:
-                audio_segment = recognizer.record(source, duration=segment_duration)
+                audio_segment = recognizer.record(source, duration=segment_duration, offset=start_time)
 
-            text = recognizer.recognize_google(audio_segment)
+            try:
+                text = recognizer.recognize_google(audio_segment)
+                print(f"Recognized text: {text}")
 
-            lyrics.append(text)
-            timestamps.append(start_time)
+                lyrics.append(text)
+                timestamps.append(start_time)
+
+            except sr.UnknownValueError:
+                print(f"Could not understand audio segment from {start_time}s to {end_time}s")
+                lyrics.append("")
+                timestamps.append(start_time)
+            except sr.RequestError as e:
+                print(f"Request error: {e}")
+                break
 
         os.remove(wav_path)
 
         generate_lrc(lyrics, timestamps, LRCName)
-
-    except sr.UnknownValueError:
-        print("Speech Recognition could not understand the audio")
-    except sr.RequestError as e:
-        print(f"Could not request results from Google Speech Recognition service; {e}")
 
 @app.post("/uploadfile")
 async def main(Req: Request):
