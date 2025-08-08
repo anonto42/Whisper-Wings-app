@@ -34,6 +34,11 @@ const whisperSchema = new Schema<IWhisper>({
         type: String,
         required: true
     },
+    timer: {
+        type: String,
+        enum: ['7', '12', '20', '0'],
+        required: true
+    },
     EnglishLRC: {
         type: String,
         required: true
