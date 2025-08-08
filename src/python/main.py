@@ -78,10 +78,10 @@ async def main(Req: Request):
     if request["fileName"] is None or request["fileName"] == "":
         raise HTTPException(status_code=400, detail="File name is required")
 
-    audio_path = "../../uploads/audio/" + request["fileName"]
+    audio_path = "../../uploads" + request["fileName"]
     print(f"Processing the audio file: {audio_path}")
 
-    output_lrc_path = f"../../uploads/lrc/{request['fileName'].split('.')[0]}.lrc"
+    output_lrc_path = f"../../uploads/lrc{request['fileName'].split('.')[0]}.lrc"
 
     os.makedirs(os.path.dirname(output_lrc_path), exist_ok=True)
 
@@ -89,4 +89,4 @@ async def main(Req: Request):
 
     print("Process completed.")
 
-    return {"message": "Audio processed successfully", "lrc_file": f"/lrc/{request['fileName'].split('.')[0]}.lrc"}
+    return {"message": "Audio processed successfully", "lrc_file": f"/lrc{request['fileName'].split('.')[0]}.lrc"}
