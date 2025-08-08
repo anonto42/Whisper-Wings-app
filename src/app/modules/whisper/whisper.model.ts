@@ -10,10 +10,6 @@ const whisperSchema = new Schema<IWhisper>({
         type: String,
         required: true
     },
-    whisperDescription: {
-        type: String,
-        required: true
-    },
     whisperCategory: {
         type: String,
         required: true
@@ -22,7 +18,35 @@ const whisperSchema = new Schema<IWhisper>({
         type: String,
         required: true
     },
-    whisperAudioFile: {
+    EnglishFile: {
+        type: String,
+        required: true
+    },
+    DeutschFile: {
+        type: String,
+        required: true
+    },
+    FrancaisFile: {
+        type: String,
+        required: true
+    },
+    EspanolFile: {
+        type: String,
+        required: true
+    },
+    EnglishLRC: {
+        type: String,
+        required: true
+    },
+    DeutschLRC: {
+        type: String,
+        required: true
+    },
+    FrancaisLRC: {
+        type: String,
+        required: true
+    },
+    EspanolLRC: {
         type: String,
         required: true
     },

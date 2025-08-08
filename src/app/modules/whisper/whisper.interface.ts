@@ -1,12 +1,18 @@
 
 
 export interface IWhisper {
-    whisperCoverImage: string;
     whisperName: string;
-    whisperDescription: string;
-    whisperCategory: string;
     whisperSherpas: string;
-    whisperAudioFile: string;
+    whisperCategory: string;
+    whisperCoverImage: string;
+    EnglishFile: string;
+    DeutschFile: string;
+    FrancaisFile: string;
+    EspanolFile: string;
+    EnglishLRC: string;
+    DeutschLRC: string;
+    FrancaisLRC: string;
+    EspanolLRC: string;
 }
 
 export interface IWhisperUpdate extends IWhisper {
