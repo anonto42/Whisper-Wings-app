@@ -16,198 +16,172 @@ import { Subscription } from "../subscriptions/subscription.model"
 import { Subscribed } from "../subscriptions/subscribed.model"
 import axios from "axios"
 import config from "../../../config"
-import FormData from 'form-data';
-import fs from 'fs';
 
-// const OverView = async (
-//     payload: JwtPayload
-// ) => {
-//     const admin = await User.isUserExist({_id: payload.userID})
+const OverView = async () =>{
+
+    const totalUsers = await User.countDocuments();
+    const totalAudios = ( await Whisper.countDocuments() * 4 );
+    const totalRevenue = await Subscribed.find().populate("subscriptionId");
+    const newData = totalRevenue.map( ( item: any ) => item.subscriptionId.price);
+    const totalRevenueByReduce = newData.reduce((a: number, b: number) => a + b, 0);
+
+    const totalSubscriptions = await Subscribed.countDocuments();
+
+    const getTotalSubscriptionsByMonth = async () => {
+        const totalSubscriptions = await Subscribed.aggregate([
+          {
+            $lookup: {
+              from: 'subscriptions', 
+              localField: 'subscriptionId', 
+              foreignField: '_id', 
+              as: 'subscriptionDetails'
+            }
+          },
+          {
+            $unwind: "$subscriptionDetails" 
+          },
+          {
+            $addFields: {
+              year: { $year: "$createdAt" }, 
+              month: { $month: "$createdAt" } 
+            }
+          },
+          {
+            $group: {
+              _id: {
+                year: "$year", 
+                month: "$month" 
+              },
+              totalSales: { $sum: "$subscriptionDetails.price" } 
+            }
+          },
+          {
+            $group: {
+              _id: "$_id.year", 
+              monthlySales: {
+                $push: {
+                  month: "$_id.month", 
+                  totalSales: "$totalSales"
+                }
+              },
+              totalRevenue: { $sum: "$totalSales" }
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              year: "$_id",
+              totalRevenue: 1,
+              monthlySales: 1
+            }
+          },
+          {
+            $sort: { year: 1 }
+          }
+        ]);
+      
+        const months = [
+          "January", "February", "March", "April", "May", "June", "July", "August",
+          "September", "October", "November", "December"
+        ];
+      
+        const result = totalSubscriptions.map((yearData: any) => {
+          const monthlyData = months.map((month, index) => {
+            const monthSales = yearData.monthlySales.find((sales: any) => sales.month === index + 1);
+            return {
+              month,
+              totalSales: monthSales ? monthSales.totalSales : 0
+            };
+          });
+      
+          return {
+            year: yearData.year,
+            totalRevenue: yearData.totalRevenue,
+            monthlySales: monthlyData
+          };
+        });
+      
+        return result;
+    };
+
+    const getUserGrowthByMonth = async () => {
+        const totalUsers = await User.aggregate([
+          {
+            $addFields: {
+              year: { $year: "$createdAt" },
+              month: { $month: "$createdAt" }
+            }
+          },
+          {
+            $group: {
+              _id: {
+                year: "$year", 
+                month: "$month" 
+              },
+              userCount: { $sum: 1 } 
+            }
+          },
+          {
+            $group: {
+              _id: "$_id.year", 
+              monthlyUserGrowth: {
+                $push: {
+                  month: "$_id.month", 
+                  userCount: "$userCount" 
+                }
+              },
+              totalUserGrowth: { $sum: "$userCount" } 
+            }
+          },
+          {
+            $project: {
+              _id: 0,
+              year: "$_id", 
+              totalUserGrowth: 1, 
+              monthlyUserGrowth: 1 
+            }
+          },
+          {
+            $sort: { year: 1 } 
+          }
+        ]);
+      
+        const months = [
+          "January", "February", "March", "April", "May", "June", "July", "August",
+          "September", "October", "November", "December"
+        ];
+      
+        const result = totalUsers.map((yearData: any) => {
+          const monthlyData = months.map((month, index) => {
+            const monthGrowth = yearData.monthlyUserGrowth.find((growth: any) => growth.month === index + 1);
+            return {
+              month,
+              userCount: monthGrowth ? monthGrowth.userCount : 0 
+            };
+          });
+      
+          return {
+            year: yearData.year,
+            totalUserGrowth: yearData.totalUserGrowth, 
+            monthlyUserGrowth: monthlyData 
+          };
+        });
+      
+        return result;
+    };
     
-//     const totalUsers = await User.countDocuments();
-    
-//     const activeUsersCount = await User.countDocuments({
-//         lastActive: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
-//     });
-    
-//     const getTotalRevenue = async () => {
-//         const totalRevenue = await Subscription.aggregate([
-//             {
-//             $match: {
-//                 type: SUBSCRIPTION_TYPE.SUBSCRIBED,
-//             }
-//             },
-//             {
-//             $lookup: {
-//                 from: 'subscriptions',
-//                 localField: 'subscriptionPlanId',
-//                 foreignField: '_id',
-//                 as: 'planDetails'
-//             }
-//             },
-//             {
-//             $unwind: "$planDetails"
-//             },
-//             {
-//             $group: {
-//                 _id: null,
-//                 totalRevenue: { $sum: "$planDetails.packagePrice" }
-//             }
-//             }
-//         ]);
+    const subscriptionsByMonth = await getTotalSubscriptionsByMonth();
+    const userGrowthByMonth = await getUserGrowthByMonth();
 
-//         // If the aggregation has no results, set totalRevenue to 0
-//         return totalRevenue.length > 0 ? totalRevenue[0].totalRevenue : 0;
-//     };
-//     const totalRevenue = await getTotalRevenue();
-
-
-//     // const totalRevenue = totalRevenueAgg[0]?.total || 0;
-    
-//     const plans = await Subscription.find({type: SUBSCRIPTION_TYPE.SUBSCRIPTION_PLAN});
-
-//     const totalSubscriptions = await Subscription.countDocuments();
-    
-    
-//     const monthlySalesByYear = await Subscription.aggregate([
-//             {
-//                 $match: {
-//                     type: SUBSCRIPTION_TYPE.SUBSCRIBED,
-//                 // status: SUBSCRIPTION_STATUS.ACTIVE, // Optional: only count active subscriptions
-//                 }
-//             },
-//             {
-//                 $lookup: {
-//                     from: 'subscriptions', // Collection with plan details
-//                     localField: 'subscriptionPlanId',
-//                     foreignField: '_id',
-//                     as: 'planDetails'
-//                 }
-//             },
-//             {
-//                 $unwind: "$planDetails"
-//             },
-//             {
-//                 $addFields: {
-//                     year: { $year: "$createdAt" },  // or "$date" if you use custom date
-//                     month: { $month: "$createdAt" }
-//                 }
-//             },
-//             {
-//                 $group: {
-//                     _id: {
-//                         year: "$year",
-//                         month: "$month"
-//                     },
-//                     totalSales: { $sum: "$planDetails.packagePrice" }
-//                 }
-//             },
-//             {
-//                 $group: {
-//                 _id: "$_id.year",
-//                     monthlySales: {
-//                         $push: {
-//                         month: "$_id.month",
-//                         totalSales: "$totalSales"
-//                         }
-//                     }
-//                 }
-//             },
-//             {
-//                 $project: {
-//                     _id: 0,
-//                     year: "$_id",
-//                     monthlySales: {
-//                         $map: {
-//                         input: "$monthlySales",
-//                         as: "item",
-//                         in: {
-//                             month: {
-//                             $arrayElemAt: [
-//                                 [
-//                                 "", "January", "February", "March", "April",
-//                                 "May", "June", "July", "August",
-//                                 "September", "October", "November", "December"
-//                                 ],
-//                                 "$$item.month"
-//                             ]
-//                             },
-//                             totalSales: "$$item.totalSales"
-//                         }
-//                         }
-//                     }
-//                 }
-//             },
-//             {
-//                 $sort: { year: 1 }
-//             }
-//     ]);
-
-//     const startOfWeek = new Date();
-//     startOfWeek.setHours(0, 0, 0, 0);
-//     // Set to Sunday (start of week in JS default)
-//     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
-
-//     const endOfWeek = new Date(startOfWeek);
-//     endOfWeek.setDate(endOfWeek.getDate() + 6);
-//     endOfWeek.setHours(23, 59, 59, 999);
-
-//     const weeklySubscriptions = await Subscription.aggregate([
-//     {
-//         $match: {
-//         type: SUBSCRIPTION_TYPE.SUBSCRIBED,
-//         //   status: SUBSCRIPTION_STATUS.ACTIVE,
-//         createdAt: { $gte: startOfWeek, $lte: endOfWeek }
-//         }
-//     },
-//     {
-//         $addFields: {
-//         dayOfWeek: { $dayOfWeek: "$createdAt" } // Sunday=1 ... Saturday=7
-//         }
-//     },
-//     {
-//         $group: {
-//         _id: "$dayOfWeek",
-//         count: { $sum: 1 }
-//         }
-//     },
-//     {
-//         $project: {
-//         _id: 0,
-//         dayOfWeek: "$_id",
-//         count: 1
-//         }
-//     },
-//     {
-//         $sort: { dayOfWeek: 1 }
-//     }
-//     ]);
-
-//     // To map day number to name:
-//     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-//     const result = dayNames.map((name, index) => {
-//     const dayData = weeklySubscriptions.find((w: any) => w.dayOfWeek === index + 1);
-//     return {
-//         day: name,
-//         count: dayData ? dayData.count : 0
-//     };
-//     });
-
-//     const engagementRate = totalUsers > 0
-//         ? Math.round((activeUsersCount / totalUsers) * 100)
-//         : 0;
-
-//     return {
-//     totalUsers,
-//     activeUsersCount,
-//     totalRevenue,
-//     totalSubscriptions: totalSubscriptions - plans.length ,
-//     monthlySalesByYear,      
-//     weeklySubscription: result,  
-//     engagementRate  
-//   };
-// }
+    return {
+        totalUsers,
+        totalAudios,
+        totalRevenue: totalRevenueByReduce,
+        totalSubscriptions,
+        subscriptionsByMonth,
+        userGrowthByMonth
+    }
+}
 
 const allSherpes = async (
     paginate: {page: number, limit: number}
@@ -598,5 +572,6 @@ export const AdminService = {
     updateSubscription,
     deleteSubscription,
     allSubscribers,
-    ASubscriber
+    ASubscriber,
+    OverView
 }

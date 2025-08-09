@@ -10,6 +10,13 @@ import fileUploadHandler from "../../middlewares/fileUploadHandler";
 const router = Router();
 
 router
+    .route('/overview')
+    .get(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.OverView
+    )
+
+router
     .route("/users")
     .get(
         auth( USER_ROLES.ADMIN ),

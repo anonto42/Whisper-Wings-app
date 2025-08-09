@@ -377,6 +377,18 @@ const subscripers = catchAsync(
   }
 );
 
+const OverView = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+    const result = await AdminService.OverView()
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully get overview',
+      data: result,
+    });
+  }
+)
 
 export const AdminController = {
   getUser,
@@ -399,5 +411,6 @@ export const AdminController = {
   updateSubscription,
   deleteSubscription,
   allSubscriptions,
-  subscripers
+  subscripers,
+  OverView
 }
