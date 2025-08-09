@@ -294,7 +294,12 @@ const getStory = async (
   .skip((data.page - 1) * data.limit)
   .limit(data.limit);
 
-  return whisper;
+  const DataWithLoved = whisper.map( (item: any) => ({
+    ...item._doc,
+    loved: user.favorites.includes(item._id.toString()),
+  }));
+
+  return DataWithLoved;
 };
 
 export const UserService = {
