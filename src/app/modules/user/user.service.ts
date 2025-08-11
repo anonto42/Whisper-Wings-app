@@ -8,11 +8,12 @@ import unlinkFile from '../../../shared/unlinkFile';
 import generateOTP from '../../../util/generateOTP';
 import { IUser } from './user.interface';
 import { User } from './user.model';
-import mongoose, { mongo, Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { stripeWithKey } from '../../../util/stripe';
 import { Subscription } from '../subscriptions/subscription.model';
 import { Whisper } from '../whisper/whisper.model';
 import { IWhisper } from '../whisper/whisper.interface';
+import Stripe from 'stripe';
 
 const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   //set role
@@ -267,7 +268,6 @@ const getStory = async (
     limit: number,
     timer: string,
     whisperCategory: string,
-    whisperSherpas: string,
   }    
 ): Promise<any> => {
   const { id } = payload;
@@ -285,21 +285,73 @@ const getStory = async (
   if (user.subscriptionDate < new Date(Date.now())) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was expired!");
   };
+  let whisper;
 
-  const whisper = await Whisper.find({
-    timer: data.timer,
-    whisperCategory: data.whisperCategory,
-    whisperSherpas: data.whisperSherpas,
-  })
-  .skip((data.page - 1) * data.limit)
-  .limit(data.limit);
+  if ( data.timer == "0" ) {
+      whisper = await Whisper.find({
+      whisperCategory: data.whisperCategory,
+    })
+    .skip((data.page - 1) * data.limit)
+    .limit(data.limit);
+  } else {
 
-  const DataWithLoved = whisper.map( (item: any) => ({
+    whisper = await Whisper.find({
+      timer: data.timer,
+      whisperCategory: data.whisperCategory,
+    })
+    .skip((data.page - 1) * data.limit)
+    .limit(data.limit);
+
+  }
+
+  const DataWithLoved = whisper?.map( (item: any) => ({
     ...item._doc,
     loved: user.favorites.includes(item._id.toString()),
   }));
 
   return DataWithLoved;
+};
+
+//Web-Hook call
+
+const webhook = async (event: Stripe.Event): Promise<void> => {
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        
+        const sessionData = event.data.object as Stripe.Checkout.Session;
+        const {
+          id: sessionId,
+          payment_intent: paymentIntentId,
+          metadata,
+        } = sessionData;
+        
+ 
+        if (!paymentIntentId) {
+          throw new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Payment Intent ID not found in session',
+          );
+        }
+ 
+        const paymentIntent = await stripeWithKey.paymentIntents.retrieve(
+          paymentIntentId as string,
+        );
+ 
+        break;
+      }
+ 
+      case 'checkout.session.async_payment_failed': {
+       
+        break;
+      }
+ 
+      default:
+        return;
+    }
+  } catch (err) {
+    console.error('Error processing webhook event:', err);
+  }
 };
 
 export const UserService = {
@@ -313,4 +365,5 @@ export const UserService = {
   getLoved,
   dataForGuest,
   getStory,
+  webhook
 };

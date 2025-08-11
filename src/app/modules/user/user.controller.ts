@@ -13,6 +13,8 @@ import { Subscription } from '../subscriptions/subscription.model';
 import { Subscribed } from '../subscriptions/subscribed.model';
 import path from "path";
 import fs from "fs";
+import Stripe from 'stripe';
+import config from '../../../config';
 
 const createUser = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
@@ -40,7 +42,6 @@ const getUserProfile = catchAsync(async (req: Request | any, res: Response) => {
   });
 });
 
-//update profile
 const updateProfile = catchAsync(
   async (req: Request | any, res: Response, next: NextFunction) => {
     const user = req.user;
@@ -108,7 +109,7 @@ const subscribe = catchAsync(async (req: Request | any, res: Response) => {
   });
 });
 
-const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => { 
  
   const { session_id } = req.query;
   if (!session_id) throw new ApiError(StatusCodes.BAD_REQUEST, "Session ID is required!");
@@ -252,4 +253,27 @@ const readStream = catchAsync(async (req: Request | any, res: Response, next: Ne
 
 });
 
-export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess, dataForGuest, loved, getLoved, getStory, readStream };
+const webhook = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
+
+  const sig = req.headers['stripe-signature'];
+  let event: Stripe.Event;
+
+  try {
+    
+    event = stripeWithKey.webhooks.constructEvent(
+      req.body,
+      sig as string,
+      //@ts-ignore
+      config.WEBHOOK,
+    );
+
+    await UserService.webhook(event);
+
+  } catch (error) {
+    console.log(error);
+  }
+
+});
+
+
+export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess, dataForGuest, loved, getLoved, getStory, readStream, webhook };

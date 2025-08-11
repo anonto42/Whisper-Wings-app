@@ -87,5 +87,10 @@ router
   .route("/payment/failure")
   .get(UserController.paymentFailure);
   
+router
+  .route("/webhook")
+  .post(
+    UserController.webhook
+  );
 
 export const UserRoutes = router;
