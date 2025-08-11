@@ -254,12 +254,12 @@ const AUser = async (id: string) => {
 }
 
 const deleteUser = async (id: string) => {
-    const user = await User.findByIdAndDelete(id).select("-password");
+    const newOBjID = new mongoose.Types.ObjectId(id);
+    const user = await User.findByIdAndDelete(newOBjID).select("-password");
     if (!user) {
         throw new ApiError(StatusCodes.NOT_FOUND,"User not founded!")
     }
-    user.status = STATUS.DELETED;
-    await user.save();
+    
     return user
 }
 

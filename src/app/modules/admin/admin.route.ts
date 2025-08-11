@@ -107,7 +107,7 @@ router
 router
     .route("/subscription")
     .get(
-        auth( USER_ROLES.ADMIN ),
+        auth( USER_ROLES.ADMIN, USER_ROLES.USER ),
         AdminController.allSubscriptions
     )
     .post(
