@@ -215,27 +215,91 @@ const getLoved = async (
   return isExistUser.favorites;
 };
 
+// const dataForGuest = async (
+//   data: {
+//     page: number,
+//     limit: number,
+//     timer: string,
+//     whisperCategory: string,
+//   }
+// ): Promise<any> => {
+
+//   const result = await Whisper.find()
+//     .skip((data.page - 1) * data.limit)
+//     .limit(data.limit);
+
+
+//   const formetedData = result.map( (item: IWhisper, index: number  ) => {
+
+//     if (index == 0) {
+//       return {
+//         isFree: index === 0 ? true : false,
+//         whisperName: item.whisperName,
+//         whisperCoverImage: item.whisperCoverImage,
+//         whisperCategory: item.whisperCategory,
+//         whisperSherpas: item.whisperSherpas,
+//         EnglishFile: item.EnglishFile,
+//         DeutschFile: item.DeutschFile,
+//         FrancaisFile: item.FrancaisFile,
+//         EspanolFile: item.EspanolFile,
+//         timer: item.timer,
+//         EnglishLRC: item.EnglishLRC,
+//         DeutschLRC: item.DeutschLRC,
+//         FrancaisLRC: item.FrancaisLRC,
+//         EspanolLRC: item.EspanolLRC,
+//       } 
+//     } else {
+//       return {
+//         isFree: index === 0 ? true : false,
+//         whisperName: item.whisperName,
+//         whisperCoverImage: item.whisperCoverImage,
+//         whisperCategory: item.whisperCategory,
+//         whisperSherpas: item.whisperSherpas,
+//       }
+//     }
+    
+//   });
+
+//   return formetedData;
+// };
+
+
 const dataForGuest = async (
   data: {
     page: number,
-    limit: number
+    limit: number,
+    timer: string,
+    whisperCategory: string,
   }
 ): Promise<any> => {
 
-  const result = await Whisper.find()
-    .skip((data.page - 1) * data.limit)
-    .limit(data.limit);
+  // Define filter conditions based on category and timer
+  const filterConditions: any = {};
 
+  if (data.whisperCategory) {
+    filterConditions.whisperCategory = data.whisperCategory;
+  }
 
-  const formetedData = result.map( (item: IWhisper, index: number  ) => {
+  if (data.timer) {
+    filterConditions.timer = data.timer;
+  }
 
-    if (index == 0) {
-      return {
-        isFree: index === 0 ? true : false,
-        whisperName: item.whisperName,
-        whisperCoverImage: item.whisperCoverImage,
-        whisperCategory: item.whisperCategory,
-        whisperSherpas: item.whisperSherpas,
+  // If there are any filter conditions, apply them, otherwise return random data
+  const result = filterConditions.whisperCategory || filterConditions.timer 
+    ? await Whisper.find(filterConditions)
+      .skip((data.page - 1) * data.limit)
+      .limit(data.limit)
+    : await Whisper.aggregate([{ $sample: { size: data.limit } }]); // Random sample if no filters
+
+  const formetedData = result.map((item: IWhisper, index: number) => {
+    // Return different formats based on the index
+    return {
+      isFree: index === 0 ? true : false,
+      whisperName: item.whisperName,
+      whisperCoverImage: item.whisperCoverImage,
+      whisperCategory: item.whisperCategory,
+      whisperSherpas: item.whisperSherpas,
+      ...(index === 0 ? {
         EnglishFile: item.EnglishFile,
         DeutschFile: item.DeutschFile,
         FrancaisFile: item.FrancaisFile,
@@ -245,21 +309,13 @@ const dataForGuest = async (
         DeutschLRC: item.DeutschLRC,
         FrancaisLRC: item.FrancaisLRC,
         EspanolLRC: item.EspanolLRC,
-      } 
-    } else {
-      return {
-        isFree: index === 0 ? true : false,
-        whisperName: item.whisperName,
-        whisperCoverImage: item.whisperCoverImage,
-        whisperCategory: item.whisperCategory,
-        whisperSherpas: item.whisperSherpas,
-      }
-    }
-    
+      } : {})
+    };
   });
 
   return formetedData;
 };
+
 
 const getStory = async (
   payload: JwtPayload,
