@@ -45,7 +45,7 @@ def transcribe_audio(audio_path, LRCName):
     with sr.AudioFile(wav_path) as source:
         
         duration = get_audio_duration(wav_path)
-        segment_duration = 4
+        segment_duration = 3
 
         for start_time in range(0, int(duration), segment_duration):
             end_time = start_time + segment_duration
