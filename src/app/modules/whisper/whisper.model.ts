@@ -12,6 +12,7 @@ const whisperSchema = new Schema<IWhisper>({
     },
     whisperCategory: {
         type: String,
+        enum: ['Hushabies', 'WhisperPedia Wonderings', 'Feather Stories'],
         required: true
     },
     whisperSherpas: {
