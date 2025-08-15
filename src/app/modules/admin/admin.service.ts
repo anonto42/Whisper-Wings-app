@@ -334,18 +334,18 @@ const allWhispers = async (paginate: {page: number, limit: number}) => {
 const createWhisper = async (data: IWhisper & { protocoll: string, host: string }) => {
     try {
 
-        const EnglishLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EnglishFile});
+        // const EnglishLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EnglishFile});
 
-        const DeutschLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.DeutschFile});
+        // const DeutschLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.DeutschFile});
         
-        const FrancaisLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.FrancaisFile});
+        // const FrancaisLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.FrancaisFile});
         
-        const EspanolLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EspanolFile});
+        // const EspanolLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EspanolFile});
 
-        data.DeutschLRC = DeutschLRC.data.lrc_file;
-        data.FrancaisLRC = FrancaisLRC.data.lrc_file;
-        data.EspanolLRC = EspanolLRC.data.lrc_file;
-        data.EnglishLRC = EnglishLRC.data.lrc_file;
+        // data.DeutschLRC = DeutschLRC.data.lrc_file;
+        // data.FrancaisLRC = FrancaisLRC.data.lrc_file;
+        // data.EspanolLRC = EspanolLRC.data.lrc_file;
+        // data.EnglishLRC = EnglishLRC.data.lrc_file;
 
         const result = await Whisper.create(data);
         if (!result || !result.id) {

@@ -35,6 +35,10 @@ const whisperUpload = z.object({
     DeutschFile: z.any({ required_error:"Deutsch file is required"}),
     FrancaisFile: z.any({ required_error:"Francais file is required"}),
     EspanolFile: z.any({ required_error:"Espanol file is required"}),
+    EnglishLRC: z.any({ required_error:"English LRC is required"}),
+    DeutschLRC: z.any({ required_error:"Deutsch LRC is required"}),
+    FrancaisLRC: z.any({ required_error:"Francais LRC is required"}),
+    EspanolLRC: z.any({ required_error:"Espanol LRC is required"}),
   })
 })
 

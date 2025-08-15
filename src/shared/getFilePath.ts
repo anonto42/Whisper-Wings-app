@@ -1,4 +1,4 @@
-type IFolderName = 'whisperCoverImage' | 'EnglishFile' | 'DeutschFile' | 'FrancaisFile' | 'EspanolFile' | 'doc' | 'image';
+type IFolderName = 'whisperCoverImage' | 'EnglishFile' | 'DeutschFile' | 'FrancaisFile' | 'EspanolFile' | 'doc' | 'image' | 'EnglishLRC' | 'DeutschLRC' | 'FrancaisLRC' | 'EspanolLRC';
 
 //single file
 export const getSingleFilePath = (files: any, folderName: IFolderName) => {

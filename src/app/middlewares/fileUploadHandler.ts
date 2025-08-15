@@ -42,6 +42,18 @@ const fileUploadHandler = () => {
         case 'EnglishFile':
           uploadDir = path.join(baseUploadDir, 'EnglishFile');
           break;
+        case 'EnglishLRC':
+          uploadDir = path.join(baseUploadDir, 'lrc/EnglishLRC');
+          break;
+        case 'DeutschLRC':
+          uploadDir = path.join(baseUploadDir, 'lrc/DeutschLRC');
+          break;
+        case 'FrancaisLRC':
+          uploadDir = path.join(baseUploadDir, 'lrc/FrancaisLRC');
+          break;
+        case 'EspanolLRC':
+          uploadDir = path.join(baseUploadDir, 'lrc/EspanolLRC');
+          break;
         case 'media':
           uploadDir = path.join(baseUploadDir, 'media');
           break;
@@ -144,6 +156,54 @@ const fileUploadHandler = () => {
           )
         );
       }
+    } else if (file.fieldname === 'EnglishLRC') {
+      const fileExtension = file.originalname.split('.').pop().toLowerCase();
+      if (fileExtension === 'lrc') {
+        cb(null, true);
+      } else {
+        cb(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Only .lrc files are supported'
+          )
+        );
+      }
+    } else if (file.fieldname === 'FrancaisLRC') {
+      const fileExtension = file.originalname.split('.').pop().toLowerCase();
+      if (fileExtension === 'lrc') {
+        cb(null, true);
+      } else {
+        cb(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Only .lrc files are supported'
+          )
+        );
+      }
+    } else if (file.fieldname === 'DeutschLRC') {
+      const fileExtension = file.originalname.split('.').pop().toLowerCase();
+      if (fileExtension === 'lrc') {
+        cb(null, true);
+      } else {
+        cb(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Only .lrc files are supported'
+          )
+        );
+      }
+    } else if (file.fieldname === 'EspanolLRC') {
+      const fileExtension = file.originalname.split('.').pop().toLowerCase();
+      if (fileExtension === 'lrc') {
+        cb(null, true);
+      } else {
+        cb(
+          new ApiError(
+            StatusCodes.BAD_REQUEST,
+            'Only .lrc files are supported'
+          )
+        );
+      }
     } else if (file.fieldname === 'doc') {
       if (file.mimetype === 'application/pdf') {
         cb(null, true);
@@ -166,6 +226,10 @@ const fileUploadHandler = () => {
     { name: 'FrancaisFile', maxCount: 1 },
     { name: 'EspanolFile', maxCount: 1 },
     { name: 'doc', maxCount: 3 },
+    { name: 'EnglishLRC', maxCount: 1 },
+    { name: 'DeutschLRC', maxCount: 1 },
+    { name: 'FrancaisLRC', maxCount: 1 },
+    { name: 'EspanolLRC', maxCount: 1 },
   ]);
   return upload;
 };
