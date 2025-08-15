@@ -347,6 +347,11 @@ const createWhisper = async (data: IWhisper & { protocoll: string, host: string 
         // data.EspanolLRC = EspanolLRC.data.lrc_file;
         // data.EnglishLRC = EnglishLRC.data.lrc_file;
 
+        data.DeutschLRC = `/lrc${data.DeutschLRC}`;
+        data.FrancaisLRC = `/lrc${data.FrancaisLRC}`;
+        data.EspanolLRC = `/lrc${data.EspanolLRC}`;
+        data.EnglishLRC = `/lrc${data.EnglishLRC}`;
+
         const result = await Whisper.create(data);
         if (!result || !result.id) {
             throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create whisper!");
@@ -359,6 +364,41 @@ const createWhisper = async (data: IWhisper & { protocoll: string, host: string 
         // Clean up any files if necessary
         if (data.whisperCoverImage) {
             unlinkFile(data.whisperCoverImage);
+        }
+        if (data.DeutschLRC) {
+            try {
+                await unlinkFileAsync(data.DeutschLRC); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+        if (data.FrancaisLRC) {
+            try {
+                await unlinkFileAsync(data.FrancaisLRC); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+        if (data.EspanolLRC) {
+            try {
+                await unlinkFileAsync(data.EspanolLRC); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+        if (data.EnglishLRC) {
+            try {
+                await unlinkFileAsync(data.EnglishLRC); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
+        }
+        if (data.EnglishFile) {
+            try {
+                await unlinkFileAsync(data.EnglishFile); 
+            } catch (err) {
+                console.error("Failed to delete audio file:", err);
+            }
         }
         if (data.DeutschFile) {
             try {
@@ -377,13 +417,6 @@ const createWhisper = async (data: IWhisper & { protocoll: string, host: string 
         if (data.EspanolFile) {
             try {
                 await unlinkFileAsync(data.EspanolFile); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.EnglishFile) {
-            try {
-                await unlinkFileAsync(data.EnglishFile); 
             } catch (err) {
                 console.error("Failed to delete audio file:", err);
             }
