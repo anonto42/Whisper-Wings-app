@@ -428,7 +428,6 @@ const createWhisper = async (data: IWhisper & { protocoll: string, host: string 
 }
 
 const updateWhisper = async (data: IWhisperUpdate & { protocoll: string }) => {
-
     if( 
         !data.whisperName || 
         !data.whisperSherpas || 
@@ -437,78 +436,105 @@ const updateWhisper = async (data: IWhisperUpdate & { protocoll: string }) => {
         !data.EnglishFile || 
         !data.DeutschFile || 
         !data.FrancaisFile || 
-        !data.EspanolFile
+        !data.EspanolFile || 
+        !data.EnglishLRC || 
+        !data.DeutschLRC || 
+        !data.FrancaisLRC || 
+        !data.EspanolLRC
     ){
-        throw new ApiError(StatusCodes.BAD_REQUEST,"All fields are required!")
+        throw new ApiError(StatusCodes.BAD_REQUEST, "All fields are required!");
     }
     
-    const objid = new mongoose.Types.ObjectId(data.id)
-    const result = await Whisper.findById(objid)
+    const objid = new mongoose.Types.ObjectId(data.id);
+    const result = await Whisper.findById(objid);
     if (!result) {
-        throw new ApiError(StatusCodes.BAD_REQUEST,"Failed to update whisper!")
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to update whisper!");
     }
 
-    if( data.whisperCoverImage != result.whisperCoverImage ){
-        result.whisperCoverImage = data.whisperCoverImage;
-        
-        unlinkFile(result.whisperCoverImage);
+    try {
+        // Update cover image if changed
+        if (data.whisperCoverImage !== result.whisperCoverImage) {
+            if (result.whisperCoverImage) {
+                await unlinkFileAsync(result.whisperCoverImage).catch(console.error);
+            }
+            result.whisperCoverImage = data.whisperCoverImage;
+        }
+
+        // Update English file and LRC if changed
+        if (data.EnglishFile !== result.EnglishFile) {
+            if (result.EnglishFile) {
+                await unlinkFileAsync(result.EnglishFile).catch(console.error);
+            }
+            result.EnglishFile = data.EnglishFile;
+        }
+        if (data.EnglishLRC !== result.EnglishLRC) {
+            if (result.EnglishLRC) {
+                await unlinkFileAsync(result.EnglishLRC).catch(console.error);
+            }
+            result.EnglishLRC = data.EnglishLRC ? `/lrc${data.EnglishLRC}` : '';
+        }
+
+        // Update Deutsch file and LRC if changed
+        if (data.DeutschFile !== result.DeutschFile) {
+            if (result.DeutschFile) {
+                await unlinkFileAsync(result.DeutschFile).catch(console.error);
+            }
+            result.DeutschFile = data.DeutschFile;
+        }
+        if (data.DeutschLRC !== result.DeutschLRC) {
+            if (result.DeutschLRC) {
+                await unlinkFileAsync(result.DeutschLRC).catch(console.error);
+            }
+            result.DeutschLRC = data.DeutschLRC ? `/lrc${data.DeutschLRC}` : '';
+        }
+
+        // Update Francais file and LRC if changed
+        if (data.FrancaisFile !== result.FrancaisFile) {
+            if (result.FrancaisFile) {
+                await unlinkFileAsync(result.FrancaisFile).catch(console.error);
+            }
+            result.FrancaisFile = data.FrancaisFile;
+        }
+        if (data.FrancaisLRC !== result.FrancaisLRC) {
+            if (result.FrancaisLRC) {
+                await unlinkFileAsync(result.FrancaisLRC).catch(console.error);
+            }
+            result.FrancaisLRC = data.FrancaisLRC ? `/lrc${data.FrancaisLRC}` : '';
+        }
+
+        // Update Espanol file and LRC if changed
+        if (data.EspanolFile !== result.EspanolFile) {
+            if (result.EspanolFile) {
+                await unlinkFileAsync(result.EspanolFile).catch(console.error);
+            }
+            result.EspanolFile = data.EspanolFile;
+        }
+        if (data.EspanolLRC !== result.EspanolLRC) {
+            if (result.EspanolLRC) {
+                await unlinkFileAsync(result.EspanolLRC).catch(console.error);
+            }
+            result.EspanolLRC = data.EspanolLRC ? `/lrc${data.EspanolLRC}` : '';
+        }
+
+        // Update other fields
+        if (data.whisperName !== result.whisperName) {
+            result.whisperName = data.whisperName;
+        }
+
+        if (data.whisperSherpas !== result.whisperSherpas) {
+            result.whisperSherpas = data.whisperSherpas;
+        }
+
+        if (data.whisperCategory !== result.whisperCategory) {
+            result.whisperCategory = data.whisperCategory;
+        }
+
+        const updatedWhisper = await result.save();
+        return updatedWhisper;
+    } catch (error) {
+        console.error("Error occurred while updating whisper:", error);
+        throw new ApiError(StatusCodes.INTERNAL_SERVER_ERROR, "Failed to update whisper!");
     }
-
-    if( data.EnglishFile != result.EnglishFile ){
-        result.EnglishFile = data.EnglishFile;
-
-        const EnglishLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EnglishFile});
-
-        result.EnglishLRC = EnglishLRC.data.lrc_file;
-
-        await unlinkFileAsync(result.EnglishFile);
-    }
-
-    if( data.DeutschFile !== result.DeutschFile ){
-        result.DeutschFile = data.DeutschFile;
-
-        const DeutschLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.DeutschFile});
-
-        result.DeutschLRC = DeutschLRC.data.lrc_file;
-
-        await unlinkFileAsync(result.DeutschFile);
-    }
-
-    if( data.FrancaisFile !== result.FrancaisFile ){
-        result.FrancaisFile = data.FrancaisFile;
-
-        const FrancaisLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.FrancaisFile});
-
-        result.FrancaisLRC = FrancaisLRC.data.lrc_file;
-
-        await unlinkFileAsync(result.FrancaisFile);
-    }
-
-    if( data.EspanolFile !== result.EspanolFile ){
-        result.EspanolFile = data.EspanolFile;
-
-        const EspanolLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EspanolFile});
-
-        result.EspanolLRC = EspanolLRC.data.lrc_file;
-
-        await unlinkFileAsync(result.EspanolFile);
-    }
-
-    if (data.whisperName !== result.whisperName) {
-        result.whisperName = data.whisperName;
-    }
-
-    if (data.whisperSherpas !== result.whisperSherpas) {
-        result.whisperSherpas = data.whisperSherpas;
-    }
-
-    if (data.whisperCategory !== result.whisperCategory) {
-        result.whisperCategory = data.whisperCategory;
-    }
-
-    await result.save();
-
-    return result;
 }
 
 const deleteWhisper = async (id: string) => {

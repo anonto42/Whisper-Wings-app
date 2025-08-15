@@ -275,6 +275,10 @@ const updateWhisper = catchAsync(
     const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
     const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
     const EspanolFile = getSingleFilePath(req.files,'EspanolFile');
+    const EnglishLRC = getSingleFilePath(req.files,'EnglishLRC');
+    const DeutschLRC = getSingleFilePath(req.files,'DeutschLRC');
+    const FrancaisLRC = getSingleFilePath(req.files,'FrancaisLRC');
+    const EspanolLRC = getSingleFilePath(req.files,'EspanolLRC');
 
     const finalData = {
       whisperCoverImage,
@@ -282,7 +286,12 @@ const updateWhisper = catchAsync(
       DeutschFile,
       FrancaisFile,
       EspanolFile,
+      EnglishLRC,
+      DeutschLRC,
+      FrancaisLRC,
+      EspanolLRC,
       protocoll: req.protocol,
+      host: req.get('host'),
       ...data
     }
 
