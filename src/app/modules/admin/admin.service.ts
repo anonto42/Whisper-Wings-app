@@ -1,4 +1,3 @@
-import { JwtPayload } from "jsonwebtoken"
 import { User } from "../user/user.model"
 import ApiError from "../../../errors/ApiError"
 import { StatusCodes } from "http-status-codes"
@@ -14,8 +13,6 @@ import mongoose from "mongoose"
 import { ISubscription, IUpdateSubscription } from "../subscriptions/subscription.interface"
 import { Subscription } from "../subscriptions/subscription.model"
 import { Subscribed } from "../subscriptions/subscribed.model"
-import axios from "axios"
-import config from "../../../config"
 
 const OverView = async () =>{
 
