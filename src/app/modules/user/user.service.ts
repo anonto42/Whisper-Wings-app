@@ -30,6 +30,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
     otp: otp,
     email: createUser.email!,
   };
+  
   const createAccountTemplate = emailTemplate.createAccount(values);
   emailHelper.sendEmail(createAccountTemplate);
 
@@ -38,6 +39,7 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
     oneTimeCode: otp,
     expireAt: new Date(Date.now() + 5 * 60000),
   };
+
   await User.findOneAndUpdate(
     { _id: createUser._id },
     { $set: { authentication } }
@@ -316,7 +318,6 @@ const dataForGuest = async (
   return formetedData;
 };
 
-
 const getStory = async (
   payload: JwtPayload,
   data: {
@@ -370,6 +371,25 @@ const getStory = async (
 
 //Web-Hook call
 
+const currentSubscription = async(
+  user: JwtPayload
+): Promise<any> => {
+
+  const { id } = user;
+
+  const objID = new mongoose.Types.ObjectId(id);
+  const isExistUser = await User.findById(objID).populate("currentSubscription").lean().exec();
+  if (!isExistUser) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  }
+
+  if (!isExistUser.currentSubscription) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was not founded!");
+  }
+
+  return isExistUser.currentSubscription;
+}
+
 const webhook = async (event: Stripe.Event): Promise<void> => {
   try {
     switch (event.type) {
@@ -421,5 +441,6 @@ export const UserService = {
   getLoved,
   dataForGuest,
   getStory,
-  webhook
+  webhook,
+  currentSubscription
 };

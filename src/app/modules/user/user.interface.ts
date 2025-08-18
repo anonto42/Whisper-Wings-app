@@ -16,6 +16,7 @@ export type IUser = {
   transictionID: string;
   subscriptionDate: Date;
   favorites: Types.ObjectId[];
+  currentSubscription: Types.ObjectId;
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;

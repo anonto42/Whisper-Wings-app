@@ -142,6 +142,7 @@ const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next
   user.subscriptionDate = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000);
 
   user.transictionID = "";
+  user.currentSubscription = subObj;
   
   await user.save();
 
@@ -275,5 +276,17 @@ const webhook = catchAsync(async (req: Request | any, res: Response, next: NextF
 
 });
 
+const currentSubscription = catchAsync(async (req: Request | any, res: Response, next: NextFunction) => {
 
-export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess, dataForGuest, loved, getLoved, getStory, readStream, webhook };
+  const user = req.user;
+  const result = await UserService.currentSubscription(user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: "Subscription retrieved successfully",
+    data: result,
+  });
+});
+
+export const UserController = { createUser, getUserProfile, updateProfile, changeLanguage, getLanguage, subscribe, paymentFailure, paymentSuccess, dataForGuest, loved, getLoved, getStory, readStream, webhook, currentSubscription };

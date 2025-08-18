@@ -57,6 +57,10 @@ const userSchema = new Schema<IUser, UserModal>(
       type: Date,
       default: null,
     },
+    currentSubscription:{
+      type: Schema.Types.ObjectId,
+      ref: "subscription"
+    },
     transictionID:{
       type: String,
       default: null,

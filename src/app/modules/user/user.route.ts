@@ -86,6 +86,13 @@ router
 router
   .route("/payment/failure")
   .get(UserController.paymentFailure);
+
+router
+  .route("/current-subscription")
+  .get(
+    auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+    UserController.currentSubscription
+  );
   
 router
   .route("/webhook")
