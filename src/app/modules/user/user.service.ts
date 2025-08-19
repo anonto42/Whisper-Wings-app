@@ -18,9 +18,40 @@ import Stripe from 'stripe';
 const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
   //set role
   payload.role = USER_ROLES.USER;
-  const createUser = await User.create(payload);
-  if (!createUser) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
+  let createUser;
+
+  const isUserExist = await User.findOne({ email: payload.email });
+  if (isUserExist) {
+    
+    //send email
+    const otp = generateOTP();
+    const values = {
+      name: isUserExist.name,
+      otp: otp,
+      email: isUserExist.email!,
+    };
+    
+    const createAccountTemplate = emailTemplate.createAccount(values);
+    emailHelper.sendEmail(createAccountTemplate);
+
+    //save to DB
+    const authentication = {
+      oneTimeCode: otp,
+      expireAt: new Date(Date.now() + 5 * 60000),
+    };
+
+    await User.findOneAndUpdate(
+      { _id: isUserExist._id },
+      { $set: { authentication } }
+    );
+
+    return "Otp send successfully on your email!";
+
+  } else {
+    createUser = await User.create(payload);
+    if (!createUser) {
+      throw new ApiError(StatusCodes.BAD_REQUEST, 'Failed to create user');
+    }
   }
 
   //send email
