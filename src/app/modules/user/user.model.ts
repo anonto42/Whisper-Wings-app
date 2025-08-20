@@ -29,7 +29,7 @@ const userSchema = new Schema<IUser, UserModal>(
       type: String,
       required: true,
       select: 0,
-      minlength: 8,
+      minlength: 6,
     },
     image: {
       type: String,

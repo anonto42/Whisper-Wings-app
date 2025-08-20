@@ -23,8 +23,8 @@ const createUser = catchAsync(
 
     sendResponse(res, {
       success: true,
-      statusCode: StatusCodes.OK,
-      message: 'User created successfully',
+      statusCode: result.statusCode? result.statusCode : StatusCodes.OK,
+      message: result.message? result.message : 'User created successfully',
       data: result,
     });
   }
@@ -139,6 +139,7 @@ const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next
   if (!subscription) throw new ApiError(StatusCodes.NOT_FOUND, "Subscription was not found!");
   
   const daysToAdd = subscription.type === "monthly" ? 30 : 365; 
+  // user.subscriptionDate = new Date(user.subscriptionDate.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
   user.subscriptionDate = new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000);
 
   user.transictionID = "";
@@ -150,6 +151,7 @@ const paymentSuccess = catchAsync(async (req: Request | any, res: Response, next
     subscriptionId: subObj,
     userId: ObjId
   })
+
 
   return res.send(PaymentSuccessPage(subscription.price));
 

@@ -38,14 +38,23 @@ const createUserToDB = async (payload: Partial<IUser>): Promise<any> => {
     const authentication = {
       oneTimeCode: otp,
       expireAt: new Date(Date.now() + 5 * 60000),
+      isResetPassword: false,
     };
 
-    await User.findOneAndUpdate(
-      { _id: isUserExist._id },
-      { $set: { authentication } }
-    );
+    isUserExist.password = payload.password!;
+    isUserExist.authentication = authentication;
+    await isUserExist.save();
 
-    return "Otp send successfully on your email!";
+    return {
+      message: "Otp send successfully on your email!",
+      statusCode: 409,
+      user:{
+        name: isUserExist.name,
+        email: isUserExist.email,
+        image: isUserExist.image,
+        isVerified: isUserExist.verified,
+      }
+    };
 
   } else {
     createUser = await User.create(payload);
@@ -165,9 +174,9 @@ const subscribeToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  if ( isExistUser.subscriptionDate > new Date( Date.now() ) ) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was not expired!");
-  }
+  // if ( isExistUser.subscriptionDate > new Date( Date.now() ) ) {
+  //   throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was not expired!");
+  // }
 
   const subscribtionOBJ = new mongoose.Types.ObjectId( data.planID  );
   const isExistSubscription = await Subscription.findById(subscribtionOBJ);
