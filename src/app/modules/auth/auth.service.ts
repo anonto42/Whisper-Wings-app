@@ -176,6 +176,7 @@ const verifyEmailToDB = async (payload: IVerifyEmail) => {
     await User.findOneAndUpdate(
       { _id: isExistUser._id },
       {
+        verified: true,
         authentication: {
           isResetPassword: true,
           oneTimeCode: null,
