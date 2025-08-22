@@ -33,6 +33,6 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          cd ./[THIS WILL YOUR FOLDER NAME]
+          cd ./Whisper-Wings-app
           git pull
           docker compose up --build --force-recreate --remove-orphans -d
