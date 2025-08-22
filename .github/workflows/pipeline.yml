@@ -81,12 +81,19 @@ jobs:
 
     - name: Get SSH key and deploy to development server
       run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        # mkdir -p ~/.ssh
+        # echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+        # chmod 600 ~/.ssh/id_rsa
+        cp "${{ secrets.SERVER_SSH_KEY }}" copyTest.pem
+        chmod 600 copyTest.pem
+        cat copyTest.pem
 
     # - name: Deploy by scp
     #   run: scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./Whisper-Wings-app/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:./Whisper-Wings-app
 
-    - name: Restart server
-      run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "cd ./Whisper-Wings-app && git pull && docker compose up --build --force-recreate --remove-orphans -d"
+    - name: Deploy by termenal
+      run: |
+        ssh -i copyTest.pem ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "cd ./Whisper-Wings-app && git pull && docker compose up --build --force-recreate --remove-orphans -d"
+
+    # - name: Restart server
+    #   run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "cd ./Whisper-Wings-app && git pull && docker compose up --build --force-recreate --remove-orphans -d"
