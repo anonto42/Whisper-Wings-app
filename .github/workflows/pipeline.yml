@@ -85,8 +85,8 @@ jobs:
         echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
-    - name: Deploy by scp
-      run: scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./Whisper-Wings-app/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:./Whisper-Wings-app
+    # - name: Deploy by scp
+    #   run: scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -r ./Whisper-Wings-app/* ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:./Whisper-Wings-app
 
     - name: Restart server
       run: ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "cd ./Whisper-Wings-app && git pull && docker compose up --build --force-recreate --remove-orphans -d"
