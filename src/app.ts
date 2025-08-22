@@ -24,8 +24,7 @@ app.use('/api/v1', router);
 
 //live response
 app.get('/', (req: Request, res: Response) => {
-  res.send( "Server is running" );
-  // res.send( serverHome() );
+  res.send( serverHome() );
 });
 
 //global error handle
