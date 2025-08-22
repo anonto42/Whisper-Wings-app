@@ -59,3 +59,5 @@ pids/
 # Static data
 /uploads
 /data
+
+/conf/bash/*
