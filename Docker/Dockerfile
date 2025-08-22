@@ -17,8 +17,7 @@ RUN npm uninstall tsc && npm install typescript@latest --save-dev
 # 6. Copy source code
 COPY . .
 
-# 7. Build the TypeScript code using npx to ensure correct compiler
-RUN npx tsc
+RUN npm run build
 
 # 8. Expose desired port
 EXPOSE ${PORT}
