@@ -81,9 +81,6 @@ jobs:
 
     - name: Get SSH key and deploy to development server
       run: |
-        # mkdir -p ~/.ssh
-        # echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
-        # chmod 600 ~/.ssh/id_rsa
         cp "${{ secrets.SERVER_SSH_KEY }}" copyTest.pem
         chmod 600 copyTest.pem
         cat copyTest.pem
