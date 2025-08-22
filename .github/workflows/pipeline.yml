@@ -56,7 +56,7 @@ jobs:
           ssh-keyscan ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
         
       - name: connect and pull
-        run: ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "cd ./Whisper-Wings-app && git pull && docker compose up --build --force-recreate --remove-orphans -d"
+        run: ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "cd ./Whisper-Wings-app && git pull && sudo docker compose up --build --force-recreate --remove-orphans -d"
 
       - name: cleanup
         run: |
