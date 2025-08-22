@@ -79,9 +79,6 @@ jobs:
     - name: Build application
       run: npm run build
 
-    - name: Verify build directory content
-      run: ls -la ./Whisper-Wings-app  # Verify that this directory has content
-
     - name: Get SSH key and deploy to development server
       run: |
         mkdir -p ~/.ssh
