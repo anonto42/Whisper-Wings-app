@@ -50,7 +50,7 @@ export const serverHome = () => (
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Server Was Hacked</title>
+  <title>Server Was Started</title>
   <style>
     @keyframes rotateGradient {
       0% {
