@@ -363,7 +363,6 @@ const getStory = async (
   data: {
     page: number,
     limit: number,
-    timer: string,
     whisperCategory: string,
   }    
 ): Promise<any> => {
@@ -382,24 +381,24 @@ const getStory = async (
   if (user.subscriptionDate < new Date(Date.now())) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was expired!");
   };
-  let whisper;
 
-  if ( data.timer == "0" ) {
-      whisper = await Whisper.find({
+  // if ( data.timer == "0" ) {
+  const whisper = await Whisper.find({
       whisperCategory: data.whisperCategory,
     })
     .skip((data.page - 1) * data.limit)
     .limit(data.limit);
-  } else {
+  // } else {
 
-    whisper = await Whisper.find({
-      timer: data.timer,
-      whisperCategory: data.whisperCategory,
-    })
-    .skip((data.page - 1) * data.limit)
-    .limit(data.limit);
+  //   whisper = await Whisper.find({
+  //     timer: data.timer,
+  //     whisperCategory: data.whisperCategory,
+  //   })
+  //   .skip((data.page - 1) * data.limit)
+  //   .limit(data.limit);
+  // }
 
-  }
+  console.log(whisper)
 
   const DataWithLoved = whisper?.map( (item: any) => ({
     ...item._doc,
