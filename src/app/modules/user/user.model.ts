@@ -54,11 +54,11 @@ const userSchema = new Schema<IUser, UserModal>(
       ref: "Whisper"
     },
     subscriptionDate:{
-      type: Date,
+      type: Date || null,
       default: null,
     },
     currentSubscription:{
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId || null,
       ref: "subscription"
     },
     transictionID:{

@@ -14,9 +14,9 @@ export type IUser = {
   verified: boolean;
   language: TLangouage;
   transictionID: string;
-  subscriptionDate: Date;
+  subscriptionDate: Date | null;
   favorites: Types.ObjectId[];
-  currentSubscription: Types.ObjectId;
+  currentSubscription: Types.ObjectId | null;
   authentication?: {
     isResetPassword: boolean;
     oneTimeCode: number;

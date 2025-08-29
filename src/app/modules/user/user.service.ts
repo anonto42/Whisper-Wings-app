@@ -97,9 +97,15 @@ const getUserProfileFromDB = async (
 ): Promise<Partial<IUser>> => {
   const { id } = user;
   
-  const isExistUser = await User.isValidUser(id);
+  const isExistUser = await User.findById(new mongoose.Types.ObjectId(id));
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
+  };
+
+  if ( ( isExistUser.currentSubscription && isExistUser.subscriptionDate ) && isExistUser.subscriptionDate < new Date( Date.now() ) ) {
+    isExistUser.currentSubscription = null;
+    isExistUser.subscriptionDate = null;
+    await isExistUser.save();
   };
 
   return isExistUser;
