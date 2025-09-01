@@ -352,7 +352,6 @@ const dataForGuest = async (
         DeutschFile: item.DeutschFile,
         FrancaisFile: item.FrancaisFile,
         EspanolFile: item.EspanolFile,
-        timer: item.timer,
         EnglishLRC: item.EnglishLRC,
         DeutschLRC: item.DeutschLRC,
         FrancaisLRC: item.FrancaisLRC,

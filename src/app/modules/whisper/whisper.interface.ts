@@ -1,7 +1,6 @@
 
 
 export interface IWhisper {
-    timer: '7' | '12' | '20' | '0';
     whisperName: string;
     whisperSherpas: string;
     whisperCategory: string;
