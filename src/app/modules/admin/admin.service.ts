@@ -13,6 +13,9 @@ import mongoose from "mongoose"
 import { ISubscription, IUpdateSubscription } from "../subscriptions/subscription.interface"
 import { Subscription } from "../subscriptions/subscription.model"
 import { Subscribed } from "../subscriptions/subscribed.model"
+import { JwtPayload } from "jsonwebtoken"
+import { IWhisperPart } from "../whisper_part/part.whisper.interface"
+import { whisperPart } from "../whisper_part/part.whisper.model"
 
 const OverView = async () =>{
 
@@ -238,7 +241,12 @@ const deleteSherpa = async (
     return result
 }
 
-const allUsers = async (paginate: {page: number, limit: number}) => {
+const allUsers = async (
+    paginate: {
+        page: number, 
+        limit: number
+    }
+) => {
     
     return User.find()
         .select("-password -otpVerification -__v -authentication")
@@ -280,7 +288,12 @@ const unBlockUser = async ( id: string) => {
     return user
 }
 
-const allCatagory = async ( data:{ page: number, limit: number }) => {
+const allCatagory = async ( 
+    data: { 
+        page: number, 
+        limit: number 
+    }
+) => {
     return Category.find()
         .skip((data.page - 1) * data.limit)
         .limit(data.limit)
@@ -322,37 +335,40 @@ const deleteCatagory = async ( id: string ) => {
     return result
 }
 
-const allWhispers = async (paginate: {page: number, limit: number}) => {
+const allWhispers = async (
+    paginate: {
+        page: number, 
+        limit: number
+    }
+) => {
     return await Whisper.find()
         .skip((paginate.page - 1) * paginate.limit)
         .limit(paginate.limit)
+        .populate("parts", "-updatedAt -createdAt")
+        .select("-updatedAt -__v -createdAt")
+        .lean();
 }
 
-const createWhisper = async (data: IWhisper & { protocoll: string, host: string }) => {
+const createWhisper = async (
+    data: IWhisper & 
+        { 
+            protocoll: string, 
+            host: string 
+        }
+) => {
     try {
-
-        // const EnglishLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EnglishFile});
-
-        // const DeutschLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.DeutschFile});
-        
-        // const FrancaisLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.FrancaisFile});
-        
-        // const EspanolLRC = await axios.post(`${data.protocoll}://${config.ip_address}:${config.python_port}/uploadfile`, {fileName: data.EspanolFile});
-
-        // data.DeutschLRC = DeutschLRC.data.lrc_file;
-        // data.FrancaisLRC = FrancaisLRC.data.lrc_file;
-        // data.EspanolLRC = EspanolLRC.data.lrc_file;
-        // data.EnglishLRC = EnglishLRC.data.lrc_file;
-
-        data.DeutschLRC = `/lrc${data.DeutschLRC}`;
-        data.FrancaisLRC = `/lrc${data.FrancaisLRC}`;
-        data.EspanolLRC = `/lrc${data.EspanolLRC}`;
-        data.EnglishLRC = `/lrc${data.EnglishLRC}`;
 
         const result = await Whisper.create(data);
         if (!result || !result.id) {
             throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create whisper!");
         }
+
+        //@ts-ignore
+        delete result.createdAt
+        //@ts-ignore
+        delete result.updatedAt
+        delete result.__v
+
         return result;
         
     } catch (error) {
@@ -362,66 +378,91 @@ const createWhisper = async (data: IWhisper & { protocoll: string, host: string 
         if (data.whisperCoverImage) {
             unlinkFile(data.whisperCoverImage);
         }
-        if (data.DeutschLRC) {
-            try {
-                await unlinkFileAsync(data.DeutschLRC); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.FrancaisLRC) {
-            try {
-                await unlinkFileAsync(data.FrancaisLRC); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.EspanolLRC) {
-            try {
-                await unlinkFileAsync(data.EspanolLRC); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.EnglishLRC) {
-            try {
-                await unlinkFileAsync(data.EnglishLRC); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.EnglishFile) {
-            try {
-                await unlinkFileAsync(data.EnglishFile); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.DeutschFile) {
-            try {
-                await unlinkFileAsync(data.DeutschFile); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.FrancaisFile) {
-            try {
-                await unlinkFileAsync(data.FrancaisFile); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
-        if (data.EspanolFile) {
-            try {
-                await unlinkFileAsync(data.EspanolFile); 
-            } catch (err) {
-                console.error("Failed to delete audio file:", err);
-            }
-        }
+        // if (data.DeutschLRC) {
+        //     try {
+        //         await unlinkFileAsync(data.DeutschLRC); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
+        // if (data.FrancaisLRC) {
+        //     try {
+        //         await unlinkFileAsync(data.FrancaisLRC); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
+        // if (data.EspanolLRC) {
+        //     try {
+        //         await unlinkFileAsync(data.EspanolLRC); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
+        // if (data.EnglishLRC) {
+        //     try {
+        //         await unlinkFileAsync(data.EnglishLRC); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
+        // if (data.EnglishFile) {
+        //     try {
+        //         await unlinkFileAsync(data.EnglishFile); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
+        // if (data.DeutschFile) {
+        //     try {
+        //         await unlinkFileAsync(data.DeutschFile); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
+        // if (data.FrancaisFile) {
+        //     try {
+        //         await unlinkFileAsync(data.FrancaisFile); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
+        // if (data.EspanolFile) {
+        //     try {
+        //         await unlinkFileAsync(data.EspanolFile); 
+        //     } catch (err) {
+        //         console.error("Failed to delete audio file:", err);
+        //     }
+        // }
 
         // Handle failure and throw an error
         throw new ApiError(StatusCodes.BAD_REQUEST, "Failed to create whisper!");
     }
+}
+
+const createWhisperPart = async (
+    data: IWhisperPart
+) => {
+
+    const mainWhisper = await Whisper.findById( new mongoose.Types.ObjectId(data.parent_id));
+    if (!mainWhisper) {
+        throw new ApiError(
+            StatusCodes.NOT_FOUND,
+            "Your main Whisper Not founded!"
+        )
+    }
+
+    data.DeutschLRC = `/lrc${data.DeutschLRC}`;
+    data.EnglishLRC = `/lrc${data.EnglishLRC}`;
+    data.FrancaisLRC = `/lrc${data.FrancaisLRC}`;
+    data.EspanolLRC = `/lrc${data.EspanolLRC}`;
+
+    const whisper = await whisperPart.create( data );
+    
+    mainWhisper.parts.push(whisper._id);
+    await mainWhisper.save()
+    
+    return whisper
 }
 
 const updateWhisper = async (data: IWhisperUpdate & { protocoll: string }) => {
@@ -429,15 +470,15 @@ const updateWhisper = async (data: IWhisperUpdate & { protocoll: string }) => {
         !data.whisperName || 
         !data.whisperSherpas || 
         !data.whisperCategory || 
-        !data.whisperCoverImage || 
-        !data.EnglishFile || 
-        !data.DeutschFile || 
-        !data.FrancaisFile || 
-        !data.EspanolFile || 
-        !data.EnglishLRC || 
-        !data.DeutschLRC || 
-        !data.FrancaisLRC || 
-        !data.EspanolLRC
+        !data.whisperCoverImage
+        // !data.EnglishFile || 
+        // !data.DeutschFile || 
+        // !data.FrancaisFile || 
+        // !data.EspanolFile || 
+        // !data.EnglishLRC || 
+        // !data.DeutschLRC || 
+        // !data.FrancaisLRC || 
+        // !data.EspanolLRC
     ){
         throw new ApiError(StatusCodes.BAD_REQUEST, "All fields are required!");
     }
@@ -458,60 +499,60 @@ const updateWhisper = async (data: IWhisperUpdate & { protocoll: string }) => {
         }
 
         // Update English file and LRC if changed
-        if (data.EnglishFile !== result.EnglishFile) {
-            if (result.EnglishFile) {
-                await unlinkFileAsync(result.EnglishFile).catch(console.error);
-            }
-            result.EnglishFile = data.EnglishFile;
-        }
-        if (data.EnglishLRC !== result.EnglishLRC) {
-            if (result.EnglishLRC) {
-                await unlinkFileAsync(result.EnglishLRC).catch(console.error);
-            }
-            result.EnglishLRC = data.EnglishLRC ? `/lrc${data.EnglishLRC}` : '';
-        }
+        // if (data.EnglishFile !== result.EnglishFile) {
+        //     if (result.EnglishFile) {
+        //         await unlinkFileAsync(result.EnglishFile).catch(console.error);
+        //     }
+        //     result.EnglishFile = data.EnglishFile;
+        // }
+        // if (data.EnglishLRC !== result.EnglishLRC) {
+        //     if (result.EnglishLRC) {
+        //         await unlinkFileAsync(result.EnglishLRC).catch(console.error);
+        //     }
+        //     result.EnglishLRC = data.EnglishLRC ? `/lrc${data.EnglishLRC}` : '';
+        // }
 
-        // Update Deutsch file and LRC if changed
-        if (data.DeutschFile !== result.DeutschFile) {
-            if (result.DeutschFile) {
-                await unlinkFileAsync(result.DeutschFile).catch(console.error);
-            }
-            result.DeutschFile = data.DeutschFile;
-        }
-        if (data.DeutschLRC !== result.DeutschLRC) {
-            if (result.DeutschLRC) {
-                await unlinkFileAsync(result.DeutschLRC).catch(console.error);
-            }
-            result.DeutschLRC = data.DeutschLRC ? `/lrc${data.DeutschLRC}` : '';
-        }
+        // // Update Deutsch file and LRC if changed
+        // if (data.DeutschFile !== result.DeutschFile) {
+        //     if (result.DeutschFile) {
+        //         await unlinkFileAsync(result.DeutschFile).catch(console.error);
+        //     }
+        //     result.DeutschFile = data.DeutschFile;
+        // }
+        // if (data.DeutschLRC !== result.DeutschLRC) {
+        //     if (result.DeutschLRC) {
+        //         await unlinkFileAsync(result.DeutschLRC).catch(console.error);
+        //     }
+        //     result.DeutschLRC = data.DeutschLRC ? `/lrc${data.DeutschLRC}` : '';
+        // }
 
-        // Update Francais file and LRC if changed
-        if (data.FrancaisFile !== result.FrancaisFile) {
-            if (result.FrancaisFile) {
-                await unlinkFileAsync(result.FrancaisFile).catch(console.error);
-            }
-            result.FrancaisFile = data.FrancaisFile;
-        }
-        if (data.FrancaisLRC !== result.FrancaisLRC) {
-            if (result.FrancaisLRC) {
-                await unlinkFileAsync(result.FrancaisLRC).catch(console.error);
-            }
-            result.FrancaisLRC = data.FrancaisLRC ? `/lrc${data.FrancaisLRC}` : '';
-        }
+        // // Update Francais file and LRC if changed
+        // if (data.FrancaisFile !== result.FrancaisFile) {
+        //     if (result.FrancaisFile) {
+        //         await unlinkFileAsync(result.FrancaisFile).catch(console.error);
+        //     }
+        //     result.FrancaisFile = data.FrancaisFile;
+        // }
+        // if (data.FrancaisLRC !== result.FrancaisLRC) {
+        //     if (result.FrancaisLRC) {
+        //         await unlinkFileAsync(result.FrancaisLRC).catch(console.error);
+        //     }
+        //     result.FrancaisLRC = data.FrancaisLRC ? `/lrc${data.FrancaisLRC}` : '';
+        // }
 
-        // Update Espanol file and LRC if changed
-        if (data.EspanolFile !== result.EspanolFile) {
-            if (result.EspanolFile) {
-                await unlinkFileAsync(result.EspanolFile).catch(console.error);
-            }
-            result.EspanolFile = data.EspanolFile;
-        }
-        if (data.EspanolLRC !== result.EspanolLRC) {
-            if (result.EspanolLRC) {
-                await unlinkFileAsync(result.EspanolLRC).catch(console.error);
-            }
-            result.EspanolLRC = data.EspanolLRC ? `/lrc${data.EspanolLRC}` : '';
-        }
+        // // Update Espanol file and LRC if changed
+        // if (data.EspanolFile !== result.EspanolFile) {
+        //     if (result.EspanolFile) {
+        //         await unlinkFileAsync(result.EspanolFile).catch(console.error);
+        //     }
+        //     result.EspanolFile = data.EspanolFile;
+        // }
+        // if (data.EspanolLRC !== result.EspanolLRC) {
+        //     if (result.EspanolLRC) {
+        //         await unlinkFileAsync(result.EspanolLRC).catch(console.error);
+        //     }
+        //     result.EspanolLRC = data.EspanolLRC ? `/lrc${data.EspanolLRC}` : '';
+        // }
 
         // Update other fields
         if (data.whisperName !== result.whisperName) {
@@ -534,16 +575,89 @@ const updateWhisper = async (data: IWhisperUpdate & { protocoll: string }) => {
     }
 }
 
+const updateWhisperPart = async (
+  data: Partial<IWhisperPart> & { protocoll: string; _id: string }
+) => {
+  const objId = new mongoose.Types.ObjectId(data._id);
+  const result = await whisperPart.findById(objId) as any;
+
+  if (!result) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, "Whisper not found!");
+  }
+
+  if ( data.part ) result.part = data.part;
+ 
+  try {
+    // Supported languages
+    const languages = ["English", "Deutsch", "Francais", "Espanol"];
+
+    for (const lang of languages) {
+      const fileKey = `${lang}File` as keyof IWhisperPart;
+      const lrcKey = `${lang}LRC` as keyof IWhisperPart;
+
+      // ✅ Only update if new File is provided
+      if (data[fileKey] !== undefined && data[fileKey] !== result[fileKey]) {
+        if (result[fileKey]) {
+          await unlinkFileAsync(result[fileKey] as string).catch(console.error);
+        }
+        result[fileKey] = data[fileKey]!;
+      }
+
+      // ✅ Only update if new LRC is provided
+      if (data[lrcKey] !== undefined && data[lrcKey] !== result[lrcKey]) {
+        if (result[lrcKey]) {
+          await unlinkFileAsync(result[lrcKey] as string).catch(console.error);
+        }
+        result[lrcKey] = data[lrcKey] ? `/lrc${data[lrcKey]}` : "";
+      }
+    }
+
+    const updatedWhisper = await result.save();
+    return updatedWhisper;
+  } catch (error) {
+    console.error("Error occurred while updating whisper:", error);
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Failed to update whisper!"
+    );
+  }
+}
+
 const deleteWhisper = async (id: string) => {
 
     const objID = new mongoose.Types.ObjectId(id)
 
     const result = await Whisper.findByIdAndDelete(objID)
     if (!result) {
-        throw new ApiError(StatusCodes.BAD_REQUEST,"Whisper not found for delete!")
+      throw new ApiError(StatusCodes.BAD_REQUEST,"Whisper not found for delete!")
     }
-
     unlinkFile(result.whisperCoverImage);
+
+    const whisperPrts = await whisperPart.find({ parent_id: result._id }).lean();
+
+    if (whisperPrts.length > 0 ) {
+      whisperPrts.forEach( async ( e: any ) => {
+        await unlinkFileAsync(e.EnglishFile);
+        await unlinkFileAsync(e.DeutschFile);
+        await unlinkFileAsync(e.FrancaisFile);
+        await unlinkFileAsync(e.EspanolFile);
+        await unlinkFileAsync(e.EnglishLRC);
+        await unlinkFileAsync(e.DeutschLRC);
+        await unlinkFileAsync(e.FrancaisLRC);
+        await unlinkFileAsync(e.EspanolLRC);
+      })
+    }
+    return result
+}
+
+const deleteWhisperPart = async (id: string) => {
+
+    const objID = new mongoose.Types.ObjectId(id)
+
+    const result = await whisperPart.findByIdAndDelete(objID)
+    if (!result) {
+        throw new ApiError(StatusCodes.BAD_REQUEST,"Whisper Prt not found for delete!")
+    }
     
     await unlinkFileAsync(result.EnglishFile);
     await unlinkFileAsync(result.DeutschFile);
@@ -606,8 +720,9 @@ const ASubscriber = async (id: string) => {
 }
 
 export const AdminService = {
-    allUsers,
-    AUser,
+    allUsers, updateWhisperPart,
+    AUser, createWhisperPart,
+    deleteWhisperPart,
     deleteUser,
     blockUser,
     unBlockUser,

@@ -31,6 +31,13 @@ const whisperUpload = z.object({
     whisperSherpas: z.string({ required_error:"Sherpas is required"}),
     whisperCategory: z.string({ required_error:"Category is required"}),
     whisperCoverImage: z.any({required_error: "You must give the image of the catagory"}),
+  })
+})
+
+const whisperPartUpload = z.object({
+  body: z.object({
+    parent_id: z.string({ required_error: "Your must give your parent whisper id!"}),
+    part: z.coerce.number({ required_error: "You must give the part of your whisper"}),
     EnglishFile: z.any({ required_error:"English file is required"}),
     DeutschFile: z.any({ required_error:"Deutsch file is required"}),
     FrancaisFile: z.any({ required_error:"Francais file is required"}),
@@ -90,5 +97,6 @@ export const AdminValidaton = {
   updateCatagory,
   whisperUpdate,
   subscriptionUpload,
-  subscriptionUpdate
+  subscriptionUpdate,
+  whisperPartUpload
 }

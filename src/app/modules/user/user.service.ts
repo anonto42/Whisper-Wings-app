@@ -263,55 +263,6 @@ const getLoved = async (
   return isExistUser.favorites;
 };
 
-// const dataForGuest = async (
-//   data: {
-//     page: number,
-//     limit: number,
-//     timer: string,
-//     whisperCategory: string,
-//   }
-// ): Promise<any> => {
-
-//   const result = await Whisper.find()
-//     .skip((data.page - 1) * data.limit)
-//     .limit(data.limit);
-
-
-//   const formetedData = result.map( (item: IWhisper, index: number  ) => {
-
-//     if (index == 0) {
-//       return {
-//         isFree: index === 0 ? true : false,
-//         whisperName: item.whisperName,
-//         whisperCoverImage: item.whisperCoverImage,
-//         whisperCategory: item.whisperCategory,
-//         whisperSherpas: item.whisperSherpas,
-//         EnglishFile: item.EnglishFile,
-//         DeutschFile: item.DeutschFile,
-//         FrancaisFile: item.FrancaisFile,
-//         EspanolFile: item.EspanolFile,
-//         timer: item.timer,
-//         EnglishLRC: item.EnglishLRC,
-//         DeutschLRC: item.DeutschLRC,
-//         FrancaisLRC: item.FrancaisLRC,
-//         EspanolLRC: item.EspanolLRC,
-//       } 
-//     } else {
-//       return {
-//         isFree: index === 0 ? true : false,
-//         whisperName: item.whisperName,
-//         whisperCoverImage: item.whisperCoverImage,
-//         whisperCategory: item.whisperCategory,
-//         whisperSherpas: item.whisperSherpas,
-//       }
-//     }
-    
-//   });
-
-//   return formetedData;
-// };
-
-
 const dataForGuest = async (
   data: {
     page: number,
@@ -336,26 +287,22 @@ const dataForGuest = async (
   const result = filterConditions.whisperCategory || filterConditions.timer 
     ? await Whisper.find(filterConditions)
       .skip((data.page - 1) * data.limit)
+      .populate("parts","-createdAt -updatedAt -__v")
       .limit(data.limit)
-    : await Whisper.aggregate([{ $sample: { size: data.limit } }]); // Random sample if no filters
+    : await Whisper.aggregate([{ $sample: { size: data.limit } }]);
+
 
   const formetedData = result.map((item: IWhisper, index: number) => {
     // Return different formats based on the index
     return {
       isFree: index === 0 ? true : false,
+      _id: item._id,
       whisperName: item.whisperName,
       whisperCoverImage: item.whisperCoverImage,
       whisperCategory: item.whisperCategory,
       whisperSherpas: item.whisperSherpas,
       ...(index === 0 ? {
-        EnglishFile: item.EnglishFile,
-        DeutschFile: item.DeutschFile,
-        FrancaisFile: item.FrancaisFile,
-        EspanolFile: item.EspanolFile,
-        EnglishLRC: item.EnglishLRC,
-        DeutschLRC: item.DeutschLRC,
-        FrancaisLRC: item.FrancaisLRC,
-        EspanolLRC: item.EspanolLRC,
+        parts: item.parts
       } : {})
     };
   });
@@ -387,26 +334,18 @@ const getStory = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was expired!");
   };
 
-  // if ( data.timer == "0" ) {
   const whisper = await Whisper.find({
       whisperCategory: data.whisperCategory,
     })
     .skip((data.page - 1) * data.limit)
-    .limit(data.limit);
-  // } else {
+    .populate("parts","-__v -createdAt -updatedAt")
+    .select("-createdAt -updatedAt -__v")
+    .limit(data.limit)
+    .lean();
 
-  //   whisper = await Whisper.find({
-  //     timer: data.timer,
-  //     whisperCategory: data.whisperCategory,
-  //   })
-  //   .skip((data.page - 1) * data.limit)
-  //   .limit(data.limit);
-  // }
-
-  console.log(whisper)
 
   const DataWithLoved = whisper?.map( (item: any) => ({
-    ...item._doc,
+    ...item,
     loved: user.favorites.includes(item._id.toString()),
   }));
 

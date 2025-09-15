@@ -232,25 +232,25 @@ const createWhisper = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const {...data} = req.body;
     const whisperCoverImage = getSingleFilePath(req.files,'whisperCoverImage');
-    const EnglishFile = getSingleFilePath(req.files,'EnglishFile');
-    const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
-    const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
-    const EspanolFile = getSingleFilePath(req.files,'EspanolFile');
-    const EnglishLRC = getSingleFilePath(req.files,'EnglishLRC');
-    const DeutschLRC = getSingleFilePath(req.files,'DeutschLRC');
-    const FrancaisLRC = getSingleFilePath(req.files,'FrancaisLRC');
-    const EspanolLRC = getSingleFilePath(req.files,'EspanolLRC');
+    // const EnglishFile = getSingleFilePath(req.files,'EnglishFile');
+    // const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
+    // const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
+    // const EspanolFile = getSingleFilePath(req.files,'EspanolFile');
+    // const EnglishLRC = getSingleFilePath(req.files,'EnglishLRC');
+    // const DeutschLRC = getSingleFilePath(req.files,'DeutschLRC');
+    // const FrancaisLRC = getSingleFilePath(req.files,'FrancaisLRC');
+    // const EspanolLRC = getSingleFilePath(req.files,'EspanolLRC');
 
     const finalData = {
       whisperCoverImage,
-      EnglishFile,
-      DeutschFile,
-      FrancaisFile,
-      EspanolFile,
-      EnglishLRC,
-      DeutschLRC,
-      FrancaisLRC,
-      EspanolLRC,
+      // EnglishFile,
+      // DeutschFile,
+      // FrancaisFile,
+      // EspanolFile,
+      // EnglishLRC,
+      // DeutschLRC,
+      // FrancaisLRC,
+      // EspanolLRC,
       protocoll: req.protocol,
       host: req.get('host'),
       ...data
@@ -265,12 +265,10 @@ const createWhisper = catchAsync(
   }
 );
 
-const updateWhisper = catchAsync(
+const createWhisperPart = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
+    
     const {...data} = req.body;
-
-    const whisperCoverImage = getSingleFilePath(req.files,'whisperCoverImage');
     const EnglishFile = getSingleFilePath(req.files,'EnglishFile');
     const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
     const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
@@ -281,7 +279,6 @@ const updateWhisper = catchAsync(
     const EspanolLRC = getSingleFilePath(req.files,'EspanolLRC');
 
     const finalData = {
-      whisperCoverImage,
       EnglishFile,
       DeutschFile,
       FrancaisFile,
@@ -290,6 +287,79 @@ const updateWhisper = catchAsync(
       DeutschLRC,
       FrancaisLRC,
       EspanolLRC,
+      ...data
+    }
+    const result = await AdminService.createWhisperPart(finalData);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully create the whisper part',
+      data: result,
+    });
+  }
+);
+
+const updateWhisperPart = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    
+    const {...data} = req.body;
+    const EnglishFile = getSingleFilePath(req.files,'EnglishFile');
+    const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
+    const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
+    const EspanolFile = getSingleFilePath(req.files,'EspanolFile');
+    const EnglishLRC = getSingleFilePath(req.files,'EnglishLRC');
+    const DeutschLRC = getSingleFilePath(req.files,'DeutschLRC');
+    const FrancaisLRC = getSingleFilePath(req.files,'FrancaisLRC');
+    const EspanolLRC = getSingleFilePath(req.files,'EspanolLRC');
+
+    const finalData = {
+      EnglishFile,
+      DeutschFile,
+      FrancaisFile,
+      EspanolFile,
+      EnglishLRC,
+      DeutschLRC,
+      FrancaisLRC,
+      EspanolLRC,
+      ...data
+    }
+    const result = await AdminService.updateWhisperPart(finalData);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully updated the whisper part',
+      data: result,
+    });
+  }
+);
+
+const updateWhisper = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+
+    const {...data} = req.body;
+
+    const whisperCoverImage = getSingleFilePath(req.files,'whisperCoverImage');
+    // const EnglishFile = getSingleFilePath(req.files,'EnglishFile');
+    // const DeutschFile = getSingleFilePath(req.files,'DeutschFile');
+    // const FrancaisFile = getSingleFilePath(req.files,'FrancaisFile');
+    // const EspanolFile = getSingleFilePath(req.files,'EspanolFile');
+    // const EnglishLRC = getSingleFilePath(req.files,'EnglishLRC');
+    // const DeutschLRC = getSingleFilePath(req.files,'DeutschLRC');
+    // const FrancaisLRC = getSingleFilePath(req.files,'FrancaisLRC');
+    // const EspanolLRC = getSingleFilePath(req.files,'EspanolLRC');
+
+    const finalData = {
+      whisperCoverImage,
+      // EnglishFile,
+      // DeutschFile,
+      // FrancaisFile,
+      // EspanolFile,
+      // EnglishLRC,
+      // DeutschLRC,
+      // FrancaisLRC,
+      // EspanolLRC,
       protocoll: req.protocol,
       host: req.get('host'),
       ...data
@@ -314,6 +384,19 @@ const deleteWhisper = catchAsync(
       success: true,
       statusCode: StatusCodes.OK,
       message: 'Successfully delete the whisper',
+      data: result,
+    });
+  }
+);
+
+const deleteWhisperpart = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const {...data} = req.body;
+    const result = await AdminService.deleteWhisperPart(data)
+    sendResponse(res, {
+      success: true,
+      statusCode: StatusCodes.OK,
+      message: 'Successfully delete the whisper part',
       data: result,
     });
   }
@@ -408,8 +491,9 @@ const OverView = catchAsync(
 );
 
 export const AdminController = {
-  getUser,
-  blockUser,
+  getUser, updateWhisperPart,
+  blockUser, deleteWhisperpart,
+  createWhisperPart,
   unBlockUser,
   deletetUser,
   createSherpe,

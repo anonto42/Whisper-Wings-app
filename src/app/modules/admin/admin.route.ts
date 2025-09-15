@@ -104,6 +104,29 @@ router
         AdminController.deleteWhisper
     )
 
+    
+router
+    .route("/whisper-part")
+    .get(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.allWhispers
+    )
+    .post(
+        auth( USER_ROLES.ADMIN ),
+        fileUploadHandler(),
+        validateRequest(AdminValidaton.whisperPartUpload),
+        AdminController.createWhisperPart
+    )
+    .patch(
+        auth( USER_ROLES.ADMIN ),
+        fileUploadHandler(),
+        AdminController.updateWhisperPart
+    )
+    .delete(
+        auth( USER_ROLES.ADMIN ),
+        AdminController.deleteWhisperpart
+    )
+
 router
     .route("/subscription")
     .get(

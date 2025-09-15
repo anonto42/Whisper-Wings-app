@@ -1,4 +1,4 @@
-import { model, Schema} from "mongoose"
+import { model, Schema, Types} from "mongoose"
 import { IWhisper } from "./whisper.interface"
 
 const whisperSchema = new Schema<IWhisper>({
@@ -19,40 +19,12 @@ const whisperSchema = new Schema<IWhisper>({
         type: String,
         required: true
     },
-    EnglishFile: {
-        type: String,
-        required: true
-    },
-    DeutschFile: {
-        type: String,
-        required: true
-    },
-    FrancaisFile: {
-        type: String,
-        required: true
-    },
-    EspanolFile: {
-        type: String,
-        required: true
-    },
-    EnglishLRC: {
-        type: String,
-        required: true
-    },
-    DeutschLRC: {
-        type: String,
-        required: true
-    },
-    FrancaisLRC: {
-        type: String,
-        required: true
-    },
-    EspanolLRC: {
-        type: String,
-        required: true
-    },
+    parts:{
+        type: [Types.ObjectId],
+        ref: "Whisper-part"
+    }
 }, {
     timestamps: true
 })
 
-export const Whisper = model<IWhisper>("Whisper", whisperSchema)
+export const Whisper = model<IWhisper>("Whisper", whisperSchema);

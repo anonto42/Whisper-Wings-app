@@ -72,10 +72,10 @@ const fileUploadHandler = () => {
         file.originalname
           .replace(fileExt, '')
           .toLowerCase()
-          // .split(' ')
-          // .join('-')
-        // '-'
-        // Date.now();
+          .split(' ')
+          .join('-')
+        '-'
+        Date.now();
       cb(null, fileName + fileExt);
     },
   });
