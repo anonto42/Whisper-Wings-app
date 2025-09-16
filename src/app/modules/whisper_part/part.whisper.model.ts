@@ -8,7 +8,6 @@ const WhisperPartSchema = new Schema<IWhisperPart>({
     },
     part: {
         type: Number,
-        unique: true,
         required: [true, "You must give your whisper part index"]
     },
     EnglishFile: {
