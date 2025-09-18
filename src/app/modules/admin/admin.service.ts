@@ -13,175 +13,199 @@ import mongoose from "mongoose"
 import { ISubscription, IUpdateSubscription } from "../subscriptions/subscription.interface"
 import { Subscription } from "../subscriptions/subscription.model"
 import { Subscribed } from "../subscriptions/subscribed.model"
-import { JwtPayload } from "jsonwebtoken"
 import { IWhisperPart } from "../whisper_part/part.whisper.interface"
 import { whisperPart } from "../whisper_part/part.whisper.model"
 
-const OverView = async () =>{
+const OverView = async () => {
+  // Total users
+  const totalUsers = await User.countDocuments();
 
-    const totalUsers = await User.countDocuments();
-    const totalAudios = ( await Whisper.countDocuments() * 4 );
-    const totalRevenue = await Subscribed.find().populate("subscriptionId");
-    const newData = totalRevenue.map( ( item: any ) => item.subscriptionId.price);
-    const totalRevenueByReduce = newData.reduce((a: number, b: number) => a + b, 0);
+  // Total audios (4x multiplier logic)
+  const totalAudios = (await Whisper.countDocuments()) * 4;
 
-    const totalSubscriptions = await Subscribed.countDocuments();
+  // Handle revenue when prices are stored as strings
+  const totalRevenue = await Subscribed.find().populate("subscriptionId");
+  const newData = totalRevenue.map((item: any) => {
+    const price = Number(item.subscriptionId.price);
+    return isNaN(price) ? 0 : price;
+  });
+  const totalRevenueByReduce = newData.reduce((a, b) => a + b, 0);
 
-    const getTotalSubscriptionsByMonth = async () => {
-        const totalSubscriptions = await Subscribed.aggregate([
-          {
-            $lookup: {
-              from: 'subscriptions', 
-              localField: 'subscriptionId', 
-              foreignField: '_id', 
-              as: 'subscriptionDetails'
-            }
-          },
-          {
-            $unwind: "$subscriptionDetails" 
-          },
-          {
-            $addFields: {
-              year: { $year: "$createdAt" }, 
-              month: { $month: "$createdAt" } 
-            }
-          },
-          {
-            $group: {
-              _id: {
-                year: "$year", 
-                month: "$month" 
-              },
-              totalSales: { $sum: "$subscriptionDetails.price" } 
-            }
-          },
-          {
-            $group: {
-              _id: "$_id.year", 
-              monthlySales: {
-                $push: {
-                  month: "$_id.month", 
-                  totalSales: "$totalSales"
-                }
-              },
-              totalRevenue: { $sum: "$totalSales" }
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              year: "$_id",
-              totalRevenue: 1,
-              monthlySales: 1
-            }
-          },
-          {
-            $sort: { year: 1 }
-          }
-        ]);
-      
-        const months = [
-          "January", "February", "March", "April", "May", "June", "July", "August",
-          "September", "October", "November", "December"
-        ];
-      
-        const result = totalSubscriptions.map((yearData: any) => {
-          const monthlyData = months.map((month, index) => {
-            const monthSales = yearData.monthlySales.find((sales: any) => sales.month === index + 1);
-            return {
-              month,
-              totalSales: monthSales ? monthSales.totalSales : 0
-            };
-          });
-      
-          return {
-            year: yearData.year,
-            totalRevenue: yearData.totalRevenue,
-            monthlySales: monthlyData
-          };
-        });
-      
-        return result;
-    };
+  // Total subscriptions
+  const totalSubscriptions = await Subscribed.countDocuments();
 
-    const getUserGrowthByMonth = async () => {
-        const totalUsers = await User.aggregate([
-          {
-            $addFields: {
-              year: { $year: "$createdAt" },
-              month: { $month: "$createdAt" }
-            }
+  // Helper: get subscriptions by month
+  const getTotalSubscriptionsByMonth = async () => {
+    const totalSubscriptions = await Subscribed.aggregate([
+      {
+        $lookup: {
+          from: "subscriptions",
+          localField: "subscriptionId",
+          foreignField: "_id",
+          as: "subscriptionDetails",
+        },
+      },
+      { $unwind: "$subscriptionDetails" },
+      {
+        $addFields: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+        },
+      },
+      {
+        $group: {
+          _id: { year: "$year", month: "$month" },
+          totalSales: {
+            $sum: { $toDouble: "$subscriptionDetails.price" }, // convert string → number
           },
-          {
-            $group: {
-              _id: {
-                year: "$year", 
-                month: "$month" 
-              },
-              userCount: { $sum: 1 } 
-            }
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.year",
+          monthlySales: {
+            $push: {
+              month: "$_id.month",
+              totalSales: "$totalSales",
+            },
           },
-          {
-            $group: {
-              _id: "$_id.year", 
-              monthlyUserGrowth: {
-                $push: {
-                  month: "$_id.month", 
-                  userCount: "$userCount" 
-                }
-              },
-              totalUserGrowth: { $sum: "$userCount" } 
-            }
-          },
-          {
-            $project: {
-              _id: 0,
-              year: "$_id", 
-              totalUserGrowth: 1, 
-              monthlyUserGrowth: 1 
-            }
-          },
-          {
-            $sort: { year: 1 } 
-          }
-        ]);
-      
-        const months = [
-          "January", "February", "March", "April", "May", "June", "July", "August",
-          "September", "October", "November", "December"
-        ];
-      
-        const result = totalUsers.map((yearData: any) => {
-          const monthlyData = months.map((month, index) => {
-            const monthGrowth = yearData.monthlyUserGrowth.find((growth: any) => growth.month === index + 1);
-            return {
-              month,
-              userCount: monthGrowth ? monthGrowth.userCount : 0 
-            };
-          });
-      
-          return {
-            year: yearData.year,
-            totalUserGrowth: yearData.totalUserGrowth, 
-            monthlyUserGrowth: monthlyData 
-          };
-        });
-      
-        return result;
-    };
-    
-    const subscriptionsByMonth = await getTotalSubscriptionsByMonth();
-    const userGrowthByMonth = await getUserGrowthByMonth();
+          totalRevenue: { $sum: "$totalSales" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: "$_id",
+          totalRevenue: 1,
+          monthlySales: 1,
+        },
+      },
+      { $sort: { year: 1 } },
+    ]);
 
-    return {
-        totalUsers,
-        totalAudios,
-        totalRevenue: totalRevenueByReduce,
-        totalSubscriptions,
-        subscriptionsByMonth,
-        userGrowthByMonth
-    }
-}
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const result = totalSubscriptions.map((yearData: any) => {
+      const monthlyData = months.map((month, index) => {
+        const monthSales = yearData.monthlySales.find(
+          (sales: any) => sales.month === index + 1
+        );
+        return {
+          month,
+          totalSales: monthSales ? monthSales.totalSales : 0,
+        };
+      });
+
+      return {
+        year: yearData.year,
+        totalRevenue: yearData.totalRevenue,
+        monthlySales: monthlyData,
+      };
+    });
+
+    return result;
+  };
+
+  // Helper: get user growth by month
+  const getUserGrowthByMonth = async () => {
+    const totalUsers = await User.aggregate([
+      {
+        $addFields: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+        },
+      },
+      {
+        $group: {
+          _id: { year: "$year", month: "$month" },
+          userCount: { $sum: 1 },
+        },
+      },
+      {
+        $group: {
+          _id: "$_id.year",
+          monthlyUserGrowth: {
+            $push: {
+              month: "$_id.month",
+              userCount: "$userCount",
+            },
+          },
+          totalUserGrowth: { $sum: "$userCount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          year: "$_id",
+          totalUserGrowth: 1,
+          monthlyUserGrowth: 1,
+        },
+      },
+      { $sort: { year: 1 } },
+    ]);
+
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
+    const result = totalUsers.map((yearData: any) => {
+      const monthlyData = months.map((month, index) => {
+        const monthGrowth = yearData.monthlyUserGrowth.find(
+          (growth: any) => growth.month === index + 1
+        );
+        return {
+          month,
+          userCount: monthGrowth ? monthGrowth.userCount : 0,
+        };
+      });
+
+      return {
+        year: yearData.year,
+        totalUserGrowth: yearData.totalUserGrowth,
+        monthlyUserGrowth: monthlyData,
+      };
+    });
+
+    return result;
+  };
+
+  const subscriptionsByMonth = await getTotalSubscriptionsByMonth();
+  const userGrowthByMonth = await getUserGrowthByMonth();
+
+  return {
+    totalUsers,
+    totalAudios,
+    totalRevenue: totalRevenueByReduce,
+    totalSubscriptions,
+    subscriptionsByMonth,
+    userGrowthByMonth,
+  };
+};
+
 
 const allSherpes = async (
     paginate: {page: number, limit: number}
