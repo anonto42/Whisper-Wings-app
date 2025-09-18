@@ -9,11 +9,11 @@ const subscriptionSchema = new Schema<ISubscription>({
     },
     type: {
         type: String,
-        enum: ["yearly", "monthly"],
+        enum: ["annually", "monthly"],
         required: true
     },
     price: {
-        type: Number,
+        type: String,
         required: true
     },
     details: {

@@ -180,10 +180,6 @@ const subscribeToDB = async (
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
 
-  // if ( isExistUser.subscriptionDate > new Date( Date.now() ) ) {
-  //   throw new ApiError(StatusCodes.BAD_REQUEST, "Your subscription was not expired!");
-  // }
-
   const subscribtionOBJ = new mongoose.Types.ObjectId( data.planID  );
   const isExistSubscription = await Subscription.findById(subscribtionOBJ);
   if (!isExistSubscription) {
@@ -200,7 +196,7 @@ const subscribeToDB = async (
           product_data: {
             name: isExistSubscription.name,
           },
-          unit_amount: isExistSubscription.price * 100,
+          unit_amount: Number(isExistSubscription.price) * 100,
         },
         quantity: 1,
       },
@@ -351,8 +347,6 @@ const getStory = async (
 
   return DataWithLoved;
 };
-
-//Web-Hook call
 
 const currentSubscription = async(
   user: JwtPayload

@@ -74,7 +74,8 @@ const subscriptionUpdate = z.object({
   body: z.object({
       id: z.string({ required_error:"Id is required"}),
       name: z.string().optional(),    
-      price:  z.number().optional(),
+      price:  z.string().optional(),
+      type: z.enum(['annually', 'monthly']).optional(),
       details: z.array(z.string({ required_error: "Details is required"})).optional()
   })  
 })
@@ -82,7 +83,8 @@ const subscriptionUpdate = z.object({
 const subscriptionUpload = z.object({
   body: z.object({
       name: z.string({ required_error:"Name is required"}),    
-      price:  z.number({ required_error:"Price is required"}),
+      price:  z.string({ required_error:"Price is required"}),
+      type: z.enum(['annually', 'monthly']).optional(),
       details: z.array(z.string({ required_error: "Details is required"})).optional()
   })
 })

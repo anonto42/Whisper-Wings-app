@@ -2,8 +2,8 @@
 
 export interface ISubscription {
     name: string;
-    price: number;
-    type: 'yearly' | 'monthly';
+    price: string;
+    type: 'annually' | 'monthly';
     details: string[];
 }
 
