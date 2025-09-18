@@ -206,7 +206,6 @@ const OverView = async () => {
   };
 };
 
-
 const allSherpes = async (
     paginate: {page: number, limit: number}
 ) => {

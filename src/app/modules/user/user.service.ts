@@ -251,10 +251,14 @@ const getLoved = async (
 ): Promise<any> => {
   const { id } = user;
   const objID = new mongoose.Types.ObjectId(id);
-  const isExistUser = await User.findById(objID).populate("favorites");
+  const isExistUser = await User.findById(objID).populate({
+    path:"favorites",
+    populate: "parts"
+  });
   if (!isExistUser) {
     throw new ApiError(StatusCodes.BAD_REQUEST, "User doesn't exist!");
   }
+  
 
   return isExistUser.favorites;
 };
