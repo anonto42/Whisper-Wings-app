@@ -12,6 +12,10 @@ const subscriptionSchema = new Schema<ISubscription>({
         enum: ["annually", "monthly"],
         required: true
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
     price: {
         type: String,
         required: true

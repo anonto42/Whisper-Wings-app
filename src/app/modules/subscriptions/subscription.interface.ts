@@ -3,6 +3,7 @@
 export interface ISubscription {
     name: string;
     price: string;
+    isDeleted: boolean;
     type: 'annually' | 'monthly';
     details: string[];
 }

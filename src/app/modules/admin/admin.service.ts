@@ -712,18 +712,19 @@ const updateSubscription = async (data: IUpdateSubscription) => {
 const deleteSubscription = async (id: string) => {
     const objId = new mongoose.Types.ObjectId(id)
     
-    const result = await Subscription.findByIdAndDelete(objId)
+    const result = await Subscription.findByIdAndUpdate(objId,{ isDeleted: true },{new: true})
     if (!result) {
-        throw new ApiError(StatusCodes.BAD_REQUEST,"Subscription not found for delete!")
+      throw new ApiError(StatusCodes.BAD_REQUEST,"Subscription not found fordelete!")
     }
 
     return result
 }
 
 const allSubscriptions = async (paginate: {page: number, limit: number}) => {
-    return Subscription.find()
+    return Subscription.find({ isDeleted: false })
         .skip((paginate.page - 1) * paginate.limit)
         .limit(paginate.limit)
+        .lean();
 }
 
 const allSubscribers = async (paginate: {page: number, limit: number}) => {
@@ -735,11 +736,12 @@ const allSubscribers = async (paginate: {page: number, limit: number}) => {
         })
         .skip((paginate.page - 1) * paginate.limit)
         .limit(paginate.limit)
+        .lean();
 }
 
 const ASubscriber = async (id: string) => {
     const objId = new mongoose.Types.ObjectId(id)
-    return Subscribed.findById(objId)
+    return Subscribed.findById(objId).lean();
 }
 
 export const AdminService = {
