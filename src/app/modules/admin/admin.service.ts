@@ -26,7 +26,7 @@ const OverView = async () => {
   // Handle revenue when prices are stored as strings
   const totalRevenue = await Subscribed.find().populate("subscriptionId");
   const newData = totalRevenue.map((item: any) => {
-    const price = Number(item.subscriptionId.price);
+    const price = item.subscriptionId.price? Number(item.subscriptionId.price) : 0;
     return isNaN(price) ? 0 : price;
   });
   const totalRevenueByReduce = newData.reduce((a, b) => a + b, 0);
